@@ -1,19 +1,17 @@
-`include "CONTROL_UNIT.v"
-`include "ADD_SUB.v"
-`include "ADDER.v"
-`include "AND.v"
-`include "OR.v"
-`include "XOR.v"
+`include "add_sub.v"
+`include "adder.v"
+`include "and.v"
+`include "or.v"
+`include "xor.v"
+`include "shift.v"
+`include "set_less.v"
 
-module ALU (a,b,instruction,Output);
+module ALU (a,b,alu_control_signal, alu_result);
     
     input [63:0] a;
     input [63:0] b;
-    input [31:0] instruction;
-    output reg [63:0] Output;
-
-    wire [3:0] alu_control_signal;
-    alu_control Alu_control (.instruction(instruction),.alu_control_signal(alu_control_signal));
+    input [3:0] alu_control_signal;
+    output reg [63:0]  alu_result;
 
     wire [63:0] add_sub_result;
     wire Cout;
@@ -38,15 +36,15 @@ module ALU (a,b,instruction,Output);
     
     always @(*) begin
         if (alu_control_signal == 4'b0000 || alu_control_signal == 4'b1000) 
-            Output = add_sub_result;
+             alu_result = add_sub_result;
         else if (alu_control_signal == 4'b0100) 
-            Output = xor_result;
+             alu_result = xor_result;
         else if (alu_control_signal == 4'b0110) 
-            Output = or_result;
+             alu_result = or_result;
         else if (alu_control_signal == 4'b0111) 
-            Output = and_result;
+             alu_result = and_result;
         else 
-            Output = 0; 
+             alu_result = 0; 
     end
 
 
