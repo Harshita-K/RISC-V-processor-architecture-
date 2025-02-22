@@ -1,47 +1,42 @@
-// ========================== Global Memory and Registers ==========================
+`include "execute.v"
+`include "instruction_decode.v"
+`include "instruction_fetch.v"
+`include "adder.v"
+`include "MUX.v"
+`include "write_back.v"
+`include "memory_access.v"
+`include "global.v"
 
-// Instruction Memory (stores 32-bit instructions, up to 1024 instructions)
-reg [31:0] instr_mem [0:1023];  
-
-// Data Memory (stores 64-bit values, up to 1024 memory locations)
-reg [63:0] data_mem [0:1023];   
-
-// Register File (32 registers, each 64-bit wide)
-reg [63:0] register_file [0:31];
-
-// ========================== End of Global Declarations ==========================
-
-
-module datapath(
+module Datapath (
     input clk,
-    input reset
+    input reset,
+    input [31:0] instruction,
+    output [63:0] PC,
+    output [63:0] ALU_result,
+    output Zero
 );
-    // PC and instruction memory
-    reg [63:0] PC;
-    reg [31:0] instr_mem [1023:0];
-
-    // Registers and data memory
-    reg [63:0] register [31:0];
-    reg [63:0] data_memory [1023:0];
-
-    // Wires to connect modules
-    wire [31:0] instruction;
-    wire [63:0] rd1, rd2, alu_result, next_PC, write_data;
+    
+    wire [63:0] rd1, rd2, immediate, wd, mem_data, write_data;
     wire [4:0] write_addr;
     wire [3:0] alu_control_signal;
-    wire RegWrite, MemRead, MemWrite, MemtoReg, Branch;
+    wire RegWrite, MemRead, MemtoReg, MemWrite, Branch;
+    wire [1:0] ALUOp;
+    wire ALUSrc;
 
-    // Instruction Fetch
-    instruction_fetch IF (
-        .PC(PC),
-        .instr_mem(instr_mem),
-        .instruction(instruction)
-    );
+    // Program Counter
+    reg [63:0] PC_reg;
+    always @(posedge clk or posedge reset) begin
+        if (reset)
+            PC_reg <= 0;
+        else
+            PC_reg <= PC_reg + 4;
+    end
+    assign PC = PC_reg;
 
     // Instruction Decode
     instruction_decode ID (
         .instruction(instruction),
-        .register(register),
+        .register(register_file),
         .rd1(rd1),
         .rd2(rd2),
         .write_addr(write_addr),
@@ -53,50 +48,45 @@ module datapath(
         .Branch(Branch)
     );
 
-    // Execute
+    // Execution Stage
     execute EX (
         .alu_control_signal(alu_control_signal),
         .rd1(rd1),
         .rd2(rd2),
         .PC(PC),
-        .immediate({{52{instruction[31]}}, instruction[31:20]}),
+        .immediate(immediate),
         .Branch(Branch),
-        .alu_output(alu_result),
-        .next_PC(next_PC)
+        .alu_output(ALU_result),
+        .next_PC()
     );
 
-    // Memory Access
-    wire [63:0] mem_data;
-    memory_access MA (
+    // Memory Access Stage
+    memory_access MEM (
         .MemWrite(MemWrite),
         .MemRead(MemRead),
         .MemtoReg(MemtoReg),
-        .address(alu_result),
-        .write_data(rd2),
-        .data_memory(data_memory),
-        .wd(mem_data)
+        .address(ALU_result),  // ALU result as the address for memory operations
+        .write_data(rd2),  // Data to be written to memory
+        .wd(mem_data),  // Data read from memory
+        .data_mem(data_mem)  // Pass global data memory
     );
 
-    // Write Back
+    // Write-back Stage (Using write_back module)
     write_back WB (
-        .alu_result(alu_result),
-        .mem_data(mem_data),
-        .MemtoReg(MemtoReg),
-        .write_data(write_data)
+        .alu_result(ALU_result),  // ALU result to be written back
+        .mem_data(mem_data),  // Data read from memory to be written back
+        .MemtoReg(MemtoReg),  // Control signal to select between ALU result and memory data
+        .write_data(write_data)  // Final write-back data
     );
 
-    // Updating PC on clock edge
+    // Register Write Stage: Writing data back to the register file
     always @(posedge clk or posedge reset) begin
         if (reset)
-            PC <= 64'd0;
-        else
-            PC <= next_PC; // Update PC with the computed next PC
+            register_file[write_addr] <= 0;
+        else if (RegWrite)
+            register_file[write_addr] <= write_data;
     end
 
-    // Register Write-Back
-    always @(posedge clk) begin
-        if (RegWrite)
-            register[write_addr] <= write_data;
-    end
+    assign Zero = (ALU_result == 0);
 
 endmodule
