@@ -32,6 +32,7 @@ module execute(
         .sum(updated_PC),
         .Cout() // We don't need carry out for PC update
     );
+    
     assign branch_target = PC + (immediate << 1);
     
     MUX PC_mux (

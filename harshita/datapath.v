@@ -10,7 +10,6 @@
 module Datapath (
     input clk,
     input reset,
-    input [31:0] instruction,
     output [63:0] PC,
     output [63:0] ALU_result,
     output Zero
@@ -18,6 +17,7 @@ module Datapath (
     
     wire [63:0] rd1, rd2, immediate, wd, mem_data, write_data;
     wire [4:0] write_addr;
+    wire [31:0] instruction;
     wire [3:0] alu_control_signal;
     wire RegWrite, MemRead, MemtoReg, MemWrite, Branch;
     wire [1:0] ALUOp;
@@ -33,10 +33,15 @@ module Datapath (
     end
     assign PC = PC_reg;
 
+    //Instruction fetch
+    instruction_fetch IF (
+        .PC(PC),
+        .instruction(instruction)
+    );
+
     // Instruction Decode
     instruction_decode ID (
         .instruction(instruction),
-        .register(register_file),
         .rd1(rd1),
         .rd2(rd2),
         .write_addr(write_addr),

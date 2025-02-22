@@ -14,18 +14,17 @@ module memory_access(
     always @(*) begin
         if (address >= 0 && address <= 1023) begin
             if (MemRead) 
-                read_data = data_mem[address]; // Read from memory
+                read_data = data_mem[address];
             else
-                read_data = 64'd0; // Default value when not reading
+                read_data = 64'd0;
 
             if (MemWrite) 
-                data_mem[address] = write_data; // Write to memory
+                data_mem[address] = write_data;
         end else begin
-            read_data = 64'd0; // Address out of range
+            read_data = 64'd0;
         end
     end
 
-    // MUX to select between read_data and address based on MemtoReg
     MUX mem_mux (
         .sel(MemtoReg),
         .in0(address),
