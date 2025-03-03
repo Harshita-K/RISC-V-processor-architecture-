@@ -4,11 +4,6 @@ module datapath_tb;
     // Testbench signals
     reg clock;
     reg [63:0] PC;
-    wire [31:0] instruction;
-    wire invAddr;
-    wire [63:0] alu_output, next_PC;
-    wire [63:0] wd;
-    wire invMemAddr;
     
     // Instantiate the datapath module
     datapath uut (
@@ -27,16 +22,32 @@ module datapath_tb;
         uut.PC = 64'd0;
         
         #5;
-        $display("PC: %d, WD: %h", uut.PC, uut.IF_stage.instruction);
-        PC = 64'd4; // Move to next instruction
+        $display("PC: %d, rs1: %d, rs2: %d", 
+                uut.PC, uut.ID_stage.rs1, uut.ID_stage.rs2);
         
         #10;
-        $display("PC: %d, WD: %h", uut.PC, uut.IF_stage.instruction);
-        PC = 64'd8; // Another instruction
+        $display("PC: %d, rs1: %d, rs2: %d", 
+                uut.PC, uut.ID_stage.rs1, uut.ID_stage.rs2);
         
         #10;
-        $display("PC: %d, WD: %h", uut.PC, uut.IF_stage.instruction);
-        PC = 64'd12; // Test sequence continues
+        $display("PC: %d, rs1: %d, rs2: %d", 
+                uut.PC, uut.ID_stage.rs1, uut.ID_stage.rs2);
+
+        #10;
+        $display("PC: %d, rs1: %d, rs2: %d", 
+                uut.PC, uut.ID_stage.rs1, uut.ID_stage.rs2);
+        
+        #10;
+        $display("PC: %d, rs1: %d, rs2: %d", 
+                uut.PC, uut.ID_stage.rs1, uut.ID_stage.rs2);
+
+        #10;
+        $display("PC: %d, rs1: %d, rs2: %d", 
+                uut.PC, uut.ID_stage.rs1, uut.ID_stage.rs2);
+
+        #10;
+        $display("PC: %d, rs1: %d, rs2: %d", 
+                uut.PC, uut.ID_stage.rs1, uut.ID_stage.rs2);
         
         #50;
         $finish;

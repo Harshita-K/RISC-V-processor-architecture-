@@ -14,6 +14,17 @@ module datapath(
     reg [63:0] PC;
     reg [63:0] register [0:31];
     reg [63:0] data_memory [0:1023];
+
+    initial begin
+        // Initialize registers to specific values
+        register[0]  = 64'h0000000000000000; // x0 (zero register, always 0)
+        register[5]  = 64'h0000000000000005; // x5  = 5
+        register[10] = 64'h000000000000000A; // x10 = 10
+        register[11] = 64'h000000000000000B; // x11 = 11
+        register[12] = 64'h000000000000000C; // x12 = 12
+        register[13] = 64'h000000000000000D; // x13 = 13
+    end
+
     
     wire [31:0] instruction;
     wire invAddr;

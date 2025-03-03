@@ -4,7 +4,6 @@
 `include "or.v"
 `include "xor.v"
 `include "shift.v"
-`include "set_less.v"
 
 module ALU (a,b,alu_control_signal, alu_result);
     
@@ -21,9 +20,6 @@ module ALU (a,b,alu_control_signal, alu_result);
     wire [1:0] shift;
     assign shift = alu_control_signal[3:2];
     shift_unit Shift_unit (.a(a),.b(b),.direction(shift),.result(shift_result));
-
-    wire [63:0] compare_result;
-    compare_unit Compare_unit (.a(a),.b(b),.result(compare_result),.alu_control_signal(alu_control_signal));
 
     wire [63:0] and_result;
     and_unit And_unit (.a(a),.b(b),.out(and_result));
