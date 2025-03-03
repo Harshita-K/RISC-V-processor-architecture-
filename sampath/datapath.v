@@ -64,7 +64,9 @@ module datapath(
         .invRegAddr(invRegAddr)
     );
 
-    assign immediate = {{52{instruction[31]}}, instruction[31:20]};
+    assign immediate = MemWrite ? {{52{instruction[31]}}, instruction[31:25], instruction[11:7]} 
+    : {{52{instruction[31]}}, instruction[31:20]};
+
     assign invRegAddr = (rs1 > 5'd31) | (rs2 > 5'd31);
     assign rd1 = register[rs1];
 
@@ -118,7 +120,7 @@ module datapath(
         if(RegWrite & !invRegAddr)
             register[write_addr] <= wd;
         else if (MemWrite & !invMemAddr)
-            data_memory[alu_output] <= wd;    
+            data_memory[alu_output / 8] <= wd;    
     end
     
     

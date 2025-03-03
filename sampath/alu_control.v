@@ -16,7 +16,7 @@ module alu_control (
                 10'b0000000000: alu_control_signal = 4'b0010; // ADD
                 10'b0100000000: alu_control_signal = 4'b0110; // SUB
                 10'b0000000110: alu_control_signal = 4'b0001; // OR
-                10'b0000000111: alu_control_signal = 4'b0011; // AND
+                10'b0000000111: alu_control_signal = 4'b0000; // AND
                 default: begin
                     alu_control_signal = 4'b1111; // Undefined operation
                     invFunc = 1; // Set invalid function flag

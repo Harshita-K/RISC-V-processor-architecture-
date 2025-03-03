@@ -6,7 +6,7 @@ module add_sub_unit (a, b, result, alu_control_signal, Cout);
     output Cout;
     
     wire [63:0] xor_b;
-    wire [63:0] xor_bit = {64{alu_control_signal[3]}};
+    wire [63:0] xor_bit = {64{alu_control_signal[2]}};
     reg [63:0] b_selected;
     wire Cin;
     assign Cin = alu_control_signal[2];
