@@ -17,9 +17,7 @@ module instruction_decode(
    
     wire [6:0] opcode = instruction[6:0];
     wire [1:0] ALUOp;
-    wire ALUSrc; // Kept for completeness if needed later
-
-    // Directly assign outputs from instruction fields
+    
     assign rs1 = instruction[19:15];
     assign rs2 = instruction[24:20];
     assign write_addr = instruction[11:7];
