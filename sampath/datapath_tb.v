@@ -23,7 +23,7 @@ module datapath_tb;
         
         #5;
         $display("PC: %d, rd1: %d, r2: %d", 
-                uut.PC, uut.alu_output, uut.rd2);
+                uut.PC, uut.rd1, uut.rd2);
         
         #10;
         $display("PC: %d, rd1: %d, r2: %d", 

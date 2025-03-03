@@ -24,7 +24,7 @@ module execute(
     ALU alu_pc_update (
         .a(PC),
         .b(64'd4),
-        .alu_control_signal(4'b0000), // Addition
+        .alu_control_signal(4'b0010), // Addition
         .alu_result(updated_PC)
     );
 
@@ -41,7 +41,7 @@ module execute(
     ALU alu_branch (
         .a(PC),
         .b(shifted_immediate),
-        .alu_control_signal(4'b0000), // Addition
+        .alu_control_signal(4'b0010), // Addition
         .alu_result(branch_target)
     );
 
