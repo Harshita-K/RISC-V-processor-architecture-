@@ -28,6 +28,7 @@ module instruction_decode(
     ControlUnit CU (
         .opcode(opcode),
         .RegWrite(RegWrite),
+        .MemtoReg(MemtoReg),
         .ALUSrc(ALUSrc), // Might be used elsewhere
         .MemRead(MemRead),
         .MemWrite(MemWrite),

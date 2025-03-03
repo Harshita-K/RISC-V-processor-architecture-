@@ -3,6 +3,7 @@ module ControlUnit (
     output reg RegWrite,
     output reg ALUSrc,
     output reg MemRead,
+    output reg MemtoReg,
     output reg MemWrite,
     output reg Branch,
     output reg [1:0] ALUOp,
@@ -14,6 +15,7 @@ module ControlUnit (
         RegWrite = 0;
         ALUSrc   = 0;
         MemRead  = 0;
+        MemtoReg = 0;
         MemWrite = 0;
         Branch   = 0;
         ALUOp    = 2'b00;
@@ -28,6 +30,7 @@ module ControlUnit (
                 RegWrite = 1;
                 ALUSrc   = 1;
                 MemRead  = 1;
+                MemtoReg = 1;
             end
             7'b0100011: begin  // Store (SW)
                 ALUSrc   = 1;
