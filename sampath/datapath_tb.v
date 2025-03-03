@@ -26,17 +26,17 @@ module datapath_tb;
         clock = 0;
         uut.PC = 64'd0;
         
-        #10;
-        $display("PC: %d, WD: %h", PC, uut.IF_stage.instruction);
-        uut.PC = 64'd4; // Move to next instruction
+        #5;
+        $display("PC: %d, WD: %h", uut.PC, uut.IF_stage.instruction);
+        PC = 64'd4; // Move to next instruction
         
         #10;
-        $display("PC: %d, WD: %h", PC, uut.IF_stage.instruction);
-        uut.PC = 64'd8; // Another instruction
+        $display("PC: %d, WD: %h", uut.PC, uut.IF_stage.instruction);
+        PC = 64'd8; // Another instruction
         
         #10;
-        $display("PC: %d, WD: %h", PC, uut.IF_stage.instruction);
-        uut.PC = 64'd12; // Test sequence continues
+        $display("PC: %d, WD: %h", uut.PC, uut.IF_stage.instruction);
+        PC = 64'd12; // Test sequence continues
         
         #50;
         $finish;
