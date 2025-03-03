@@ -31,13 +31,13 @@ module ALU (a,b,alu_control_signal, alu_result);
     xor_unit xor_unit (.a(a),.b(b),.result(xor_result));
     
     always @(*) begin
-        if (alu_control_signal == 4'b0000 || alu_control_signal == 4'b1000) 
+        if (alu_control_signal == 4'b0010 || alu_control_signal == 4'b0110) 
              alu_result = add_sub_result;
         else if (alu_control_signal == 4'b0100) 
              alu_result = xor_result;
-        else if (alu_control_signal == 4'b0110) 
+        else if (alu_control_signal == 4'b0001) 
              alu_result = or_result;
-        else if (alu_control_signal == 4'b0111) 
+        else if (alu_control_signal == 4'b0000) 
              alu_result = and_result;
         else 
              alu_result = 0; 

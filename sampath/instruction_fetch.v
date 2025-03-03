@@ -6,7 +6,7 @@ module instruction_fetch (
     reg [31:0] instr_mem [0:1023]; 
 
     initial begin
-    instr_mem[0] = 32'h00a50533;  // ADD x10, x10, x5
+    instr_mem[0] = 32'h00550533;  // ADD x10, x10, x5
     instr_mem[1] = 32'h40b50533;  // SUB x10, x10, x11
     instr_mem[2] = 32'h00c50533;  // AND x10, x10, x12
     instr_mem[3] = 32'h00d50533;  // OR  x10, x10, x13

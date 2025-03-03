@@ -22,32 +22,32 @@ module datapath_tb;
         uut.PC = 64'd0;
         
         #5;
-        $display("PC: %d, rs1: %d, rs2: %d", 
-                uut.PC, uut.ID_stage.rs1, uut.ID_stage.rs2);
+        $display("PC: %d, rd1: %d, r2: %d", 
+                uut.PC, uut.alu_output, uut.rd2);
         
         #10;
-        $display("PC: %d, rs1: %d, rs2: %d", 
-                uut.PC, uut.ID_stage.rs1, uut.ID_stage.rs2);
+        $display("PC: %d, rd1: %d, r2: %d", 
+                uut.PC, uut.rd1, uut.rd2);
         
         #10;
-        $display("PC: %d, rs1: %d, rs2: %d", 
-                uut.PC, uut.ID_stage.rs1, uut.ID_stage.rs2);
+        $display("PC: %d, rd1: %d, r2: %d", 
+                uut.PC, uut.rd1, uut.rd2);
 
         #10;
-        $display("PC: %d, rs1: %d, rs2: %d", 
-                uut.PC, uut.ID_stage.rs1, uut.ID_stage.rs2);
+        $display("PC: %d, rd1: %d, r2: %d", 
+                uut.PC, uut.rd1, uut.rd2);
         
         #10;
-        $display("PC: %d, rs1: %d, rs2: %d", 
-                uut.PC, uut.ID_stage.rs1, uut.ID_stage.rs2);
+        $display("PC: %d, rd1: %d, r2: %d", 
+                uut.PC, uut.rd1, uut.rd2);
 
         #10;
-        $display("PC: %d, rs1: %d, rs2: %d", 
-                uut.PC, uut.ID_stage.rs1, uut.ID_stage.rs2);
+        $display("PC: %d, rd1: %d, r2: %d", 
+                uut.PC, uut.rd1, uut.rd2);
 
         #10;
-        $display("PC: %d, rs1: %d, rs2: %d", 
-                uut.PC, uut.ID_stage.rs1, uut.ID_stage.rs2);
+        $display("PC: %d, rd1: %d, r2: %d", 
+                uut.PC, uut.rd1, uut.rd2);
         
         #50;
         $finish;

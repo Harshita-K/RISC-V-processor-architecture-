@@ -4,6 +4,7 @@ module instruction_decode(
     output [4:0] rs2,
     output [4:0] write_addr,
     output [3:0] alu_control_signal,
+    output ALUSrc,
     output RegWrite,
     output MemRead,
     output MemtoReg,
@@ -15,20 +16,19 @@ module instruction_decode(
 );
    
     wire [6:0] opcode = instruction[6:0];
-    wire [4:0] rs1 = instruction[19:15];
-    wire [4:0] rs2 = instruction[24:20];
     wire [1:0] ALUOp;
-    wire ALUSrc;
-    wire invOp;
-    wire invRegAddr;
-    wire [63:0] immediate;
-    
+    wire ALUSrc; // Kept for completeness if needed later
+
+    // Directly assign outputs from instruction fields
+    assign rs1 = instruction[19:15];
+    assign rs2 = instruction[24:20];
     assign write_addr = instruction[11:7];
-    
+
+    // Instantiate the Control Unit
     ControlUnit CU (
         .opcode(opcode),
         .RegWrite(RegWrite),
-        .ALUSrc(ALUSrc),
+        .ALUSrc(ALUSrc), // Might be used elsewhere
         .MemRead(MemRead),
         .MemWrite(MemWrite),
         .Branch(Branch),
@@ -36,6 +36,7 @@ module instruction_decode(
         .invOp(invOp)
     );
     
+    // Instantiate the ALU Control
     alu_control ALU_CTRL (
         .instruction(instruction),
         .alu_op(ALUOp),
@@ -43,9 +44,9 @@ module instruction_decode(
         .alu_control_signal(alu_control_signal)
     );
 
-
 endmodule
 
+// Fixed Multiplexer Module (No Changes Needed)
 module Mux(
     input [63:0] input1,
     input [63:0] input2,

@@ -53,6 +53,7 @@ module datapath(
         .rs2(rs2),
         .write_addr(write_addr),
         .alu_control_signal(alu_control_signal),
+        .ALUSrc(ALUSrc),
         .RegWrite(RegWrite),
         .MemRead(MemRead),
         .MemtoReg(MemtoReg),
