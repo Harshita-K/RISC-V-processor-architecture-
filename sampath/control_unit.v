@@ -5,7 +5,8 @@ module ControlUnit (
     output reg MemRead,
     output reg MemWrite,
     output reg Branch,
-    output reg [1:0] ALUOp
+    output reg [1:0] ALUOp,
+    output reg invOp  // Flag for invalid opcode
 );
     
     always @(*) begin
@@ -16,6 +17,7 @@ module ControlUnit (
         MemWrite = 0;
         Branch   = 0;
         ALUOp    = 2'b00;
+        invOp    = 0;  // Assume opcode is valid
 
         case (opcode)
             7'b0110011: begin  // R-type
@@ -34,6 +36,9 @@ module ControlUnit (
             7'b1100011: begin  // Branch (BEQ)
                 Branch   = 1;
                 ALUOp    = 2'b01;
+            end
+            default: begin  // Invalid opcode detected
+                invOp = 1;
             end
         endcase
     end

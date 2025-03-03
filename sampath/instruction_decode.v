@@ -8,7 +8,10 @@ module instruction_decode(
     output MemRead,
     output MemtoReg,
     output MemWrite,
-    output Branch
+    output Branch,
+    output invOp,
+    output invFunc,
+    output invRegAddr
 );
     `include "global.v"
     wire [6:0] opcode = instruction[6:0];
@@ -16,6 +19,8 @@ module instruction_decode(
     wire [4:0] rs2 = instruction[24:20];
     wire [1:0] ALUOp;
     wire ALUSrc;
+    wire invOp;
+    wire invRegAddr;
     wire [63:0] immediate;
     
     assign write_addr = instruction[11:7];
@@ -27,19 +32,22 @@ module instruction_decode(
         .MemRead(MemRead),
         .MemWrite(MemWrite),
         .Branch(Branch),
-        .ALUOp(ALUOp)
+        .ALUOp(ALUOp),
+        .invOp(invOp)
     );
     
     alu_control ALU_CTRL (
         .instruction(instruction),
         .alu_op(ALUOp),
+        .invFunc(invFunc),
         .alu_control_signal(alu_control_signal)
     );
 
     assign immediate = {{52{instruction[31]}}, instruction[31:20]};
-
+    assign invRegAddr = (rs1 > 5'd31) | (rs2 > 5'd31);
     assign rd1 = register[rs1];
 
+    
     Mux alu_mux (
         .input1(register[rs2]),
         .input2(immediate),

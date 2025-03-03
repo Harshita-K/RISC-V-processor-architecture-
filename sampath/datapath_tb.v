@@ -64,20 +64,19 @@ dut.IF_stage.instr_mem[6] = 32'h00C5F533;  // and x10, x11, x12
   test_pc_values[5] = 64'h0000000000000014;
 
   $display("=== Datapath Testbench ===");
-  $display("PC Value\tInstruction\tReg1\tReg2\tWrite Addr\tALU Ctrl\tRegWrite\tMemRead\tMemWrite\tBranch");
+  $display("ALU Ctrl\tRegWrite\tMemRead\tMemWrite\tBranch");
   $display("-------------------------------------------------------------------------------------------------");
-
+  dut.IF_stage.PC = test_pc_values[1];
   // Run through all test cases
   for (i = 0; i < 6; i = i + 1) begin
     // Set PC value
-    dut.IF_stage.PC = test_pc_values[i];
+    
 
     // Wait for combinational logic to settle
     #10;
 
     // Display test results
-    $display("0x%b",
-            alu_control_signal);
+    $display("0x%b\t0x%b\t0x%b\t",alu_control_signal,dut.ID_stage.invRegAddr,dut.ID_stage.invOp);
   end
 
   $display("=== Datapath Testbench Complete ===");
