@@ -1,7 +1,23 @@
+
 module instruction_fetch(
-    input [63:0] PC,
-    input [31:0] instr_mem [1023:0],
-    output [31:0] instruction
+    output reg [31:0] instruction,   // Output register for the fetched instruction
+    output reg invAddr      // Invalid address flag
 );
-    assign instruction = instr_mem[PC[11:2]]; // Fetch instruction based on PC value
+
+    `include "global.v"
+    
+    // Process to fetch instruction and check address validity
+    always @(*) begin
+        if (PC[1:0] != 0 || PC[63:0] > 4095) begin
+            // Address is invalid if upper bits are non-zero or not word-aligned
+            invAddr <= 1'b1;
+            instruction <= 32'hxxxxxxxx; // Output zero for invalid addresses
+        end else begin
+            // Valid address, fetch the instruction
+            invAddr <= 1'b0;
+            instruction <= instr_mem[PC[11:2]]; // Use 10 bits for indexing 1024 entries
+        end
+    end
+
+
 endmodule
