@@ -22,7 +22,20 @@ module datapath(
         register[10] = 64'h000000000000000A; // x10 = 10
         register[11] = 64'h000000000000000B; // x11 = 11
         register[12] = 64'h000000000000000C; // x12 = 12
-        register[13] = 64'h000000000000000D; // x13 = 13
+        register[13] = 64'h0000000000000010; // x13 = 16
+
+        // Initialize data memory to specific values
+        data_memory[0] = 64'h0000000000000001;
+        data_memory[1] = 64'h0000000000000002;
+        data_memory[2] = 64'h0000000000000003;
+        data_memory[3] = 64'h0000000000000004;
+        data_memory[4] = 64'h0000000000000005;
+        data_memory[5] = 64'h0000000000000006;
+        data_memory[6] = 64'h0000000000000007;
+        data_memory[7] = 64'h0000000000000008;
+        data_memory[8] = 64'h0000000000000009;
+        data_memory[9] = 64'h000000000000000A;
+        data_memory[20] = 64'h000000000000000A;
     end
 
     
@@ -30,7 +43,6 @@ module datapath(
     wire invAddr;
     wire [4:0] rs1, rs2;
     wire [63:0] rd1, rd2;
-    wire [63:0] read_data;
     wire [4:0] write_addr;
     wire [3:0] alu_control_signal;
     wire RegWrite, MemRead, MemtoReg, MemWrite, Branch;
@@ -39,6 +51,7 @@ module datapath(
     wire [63:0] wd;
     wire invMemAddr;
     wire [63:0] immediate;
+    reg [63:0] read_data;
     
 
     instruction_fetch IF_stage (
@@ -64,14 +77,8 @@ module datapath(
         .invRegAddr(invRegAddr)
     );
 
-    assign immediate = (alu_control_signal == 4'b0010) ?  
-                      (MemWrite ? {{52{instruction[31]}}, instruction[31:25], instruction[11:7]}  // Store
-                                : {{52{instruction[31]}}, instruction[31:20]})  // Load
-                    : (alu_control_signal == 4'b0110) ?  // Branch (e.g., BEQ)
-                      {{51{instruction[31]}}, instruction[7], instruction[30:25], instruction[11:8]}
-                    : 64'd0;
-
-
+    assign immediate = MemWrite ? {{52{instruction[31]}}, instruction[31:25], instruction[11:7]} 
+    : {{52{instruction[31]}}, instruction[31:20]};
 
     assign invRegAddr = (rs1 > 5'd31) | (rs2 > 5'd31);
     assign rd1 = register[rs1];
@@ -95,17 +102,25 @@ module datapath(
         .alu_output(alu_output),
         .next_PC(next_PC)
     );
-
+    
     // Memory Access Stage
     memory_access MEM_stage (
         .MemWrite(MemWrite),
         .MemRead(MemRead),
         .MemtoReg(MemtoReg),
         .address(alu_output),
-        .write_data(rd2),
-        .read_data(read_data),
         .invMemAddr(invMemAddr)
     );
+
+    always @(*) begin
+        if (~invMemAddr)  begin
+            if (MemRead) 
+                read_data <= data_memory[alu_output]; // Read from memory
+            
+            if (MemWrite) 
+                data_memory[alu_output] <= rd2; // Write to memory
+        end
+    end
 
     Mux mem_mux (
         .input1(alu_output),
@@ -114,8 +129,6 @@ module datapath(
         .out(wd)
     );
 
-    wire zero_write;
-    assign zero_write = (write_addr == 0);
 
     always @(posedge clock or posedge reset) begin
         if (reset)
@@ -125,8 +138,8 @@ module datapath(
     end
 
     always @(posedge clock) begin
-        if(RegWrite & !invRegAddr & !zero_write)
-            register[write_addr] <= wd;
+        if(RegWrite & !invRegAddr)
+            register[write_addr ] <= wd;
         else if (MemWrite & !invMemAddr)
             data_memory[alu_output / 8] <= wd;    
     end
