@@ -4,7 +4,7 @@ module execute(
     input [63:0] rd2,
     input [63:0] PC,
     input [63:0] immediate,
-    input Branch, // Branch control signal for MUX selection
+    input Branch, 
     output [63:0] alu_output,
     output [63:0] next_PC
 );
@@ -36,7 +36,7 @@ module execute(
         .alu_control_signal(4'b0001), // Logical Shift Left
         .alu_result(shifted_immediate)
     );
-
+    assign branch_signal = Branch & (alu_output == 0);
     // ALU for branch target calculation (PC + shifted immediate)
     ALU alu_branch (
         .a(PC),
@@ -49,7 +49,7 @@ module execute(
     Mux next_pc_mux (
         .input1(updated_PC),
         .input2(branch_target),
-        .select(Branch),
+        .select(branch_signal),
         .out(next_PC)
     );
 

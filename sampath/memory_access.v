@@ -4,32 +4,27 @@ module memory_access(
     input MemtoReg,
     input [63:0] address,
     input [63:0] write_data,
-    inout [63:0] data_memory [0:1023], // Bidirectional data memory
-    output [63:0] wd
+    output reg [63:0] read_data,
+    output reg invMemAddr
 );
-    
-    reg [63:0] read_data;
-    
+
+    reg [63:0] data_memory [0:1023]; // Define the memory
+
     always @(*) begin
-        if (address >= 0 && address <= 1023) begin
+        // Default values
+        invMemAddr = 0;
+        read_data = 64'd0;
+
+        // Check for valid memory address when MemRead or MemWrite is active
+        if ((MemRead || MemWrite) && (address > 1023)) begin
+            invMemAddr = 1;
+        end else begin
             if (MemRead) 
                 read_data = data_memory[address]; // Read from memory
-            else
-                read_data = 64'd0; // Default value when not reading
-
+            
             if (MemWrite) 
                 data_memory[address] = write_data; // Write to memory
-        end else begin
-            read_data = 64'd0; // Address out of range
         end
     end
-
-    // MUX to select between read_data and address based on MemtoReg
-    Mux mem_mux (
-        .input1(address),
-        .input2(read_data),
-        .select(MemtoReg),
-        .out(wd)
-    );
 
 endmodule
