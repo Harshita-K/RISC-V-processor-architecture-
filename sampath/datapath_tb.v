@@ -27,7 +27,7 @@ module datapath_tb;
         
         #10;
         $display("PC: %d, rd1: %d, rd2: %d, alu_out: %d", 
-                uut.PC, uut.rd1, uut.EX_stage.branch_target, uut.alu_output);
+                uut.PC, uut.rd1, uut.rd2, uut.alu_output);
         
         #10;
         $display("PC: %d, rd1: %d, rd2: %d, alu_out: %d", 

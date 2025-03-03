@@ -77,8 +77,14 @@ module datapath(
         .invRegAddr(invRegAddr)
     );
 
-    assign immediate = MemWrite ? {{52{instruction[31]}}, instruction[31:25], instruction[11:7]} 
-    : {{52{instruction[31]}}, instruction[31:20]};
+    wire [63:0] immediate_value;
+    assign immediate_value = MemWrite ? {{52{instruction[31]}}, instruction[31:25], instruction[11:7]}  // Store
+                                    : {{52{instruction[31]}}, instruction[31:20]};  // Load
+
+    assign immediate = (alu_control_signal == 4'b0010) ? immediate_value :
+                    (alu_control_signal == 4'b0110) ? {{51{instruction[31]}}, instruction[7], instruction[30:25], instruction[11:8]}  // Branch
+                                                    : 64'd0;
+
 
     assign invRegAddr = (rs1 > 5'd31) | (rs2 > 5'd31);
     assign rd1 = register[rs1];
