@@ -5,10 +5,9 @@ module instruction_fetch(
 );
 
     `include "global.v"
-    
-    // Process to fetch instruction and check address validity
+
     always @(*) begin
-        if (PC[1:0] != 0 || PC[63:0] > 4095) begin
+        if (PC[1:0] != 0 || PC[63:2] > 1023) begin
             // Address is invalid if upper bits are non-zero or not word-aligned
             invAddr <= 1'b1;
             instruction <= 32'hxxxxxxxx; // Output zero for invalid addresses

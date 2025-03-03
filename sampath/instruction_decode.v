@@ -1,6 +1,5 @@
 module instruction_decode(
-    input [31:0] instruction,
-    input [63:0] register [31:0],  
+    input [31:0] instruction, 
     output [63:0] rd1,
     output [63:0] rd2,
     output [4:0] write_addr,
@@ -11,6 +10,7 @@ module instruction_decode(
     output MemWrite,
     output Branch
 );
+    `include "global.v"
     wire [6:0] opcode = instruction[6:0];
     wire [4:0] rs1 = instruction[19:15];
     wire [4:0] rs2 = instruction[24:20];
