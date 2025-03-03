@@ -18,7 +18,8 @@ module datapath(
     initial begin
         // Initialize registers to specific values
         register[0]  = 64'h0000000000000000; // x0 (zero register, always 0)
-        register[5]  = 64'h0000000000000005; // x5  = 5
+        register[5]  = 64'h0000000000000005;
+        register[4]  = 64'h0000000000000010;
         register[10] = 64'h000000000000000A; // x10 = 10
         register[11] = 64'h000000000000000B; // x11 = 11
         register[12] = 64'h000000000000000C; // x12 = 12
@@ -121,7 +122,7 @@ module datapath(
     always @(*) begin
         if (~invMemAddr)  begin
             if (MemRead) 
-                read_data <= data_memory[alu_output]; // Read from memory
+                read_data <= data_memory[alu_output / 8]; // Read from memory
             
             if (MemWrite) 
                 data_memory[alu_output] <= rd2; // Write to memory
@@ -145,7 +146,7 @@ module datapath(
 
     always @(posedge clock) begin
         if(RegWrite & !invRegAddr)
-            register[write_addr ] <= wd;
+            register[write_addr] <= wd;
         else if (MemWrite & !invMemAddr)
             data_memory[alu_output / 8] <= wd;    
     end

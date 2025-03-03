@@ -11,7 +11,7 @@ module memory_access(
         invMemAddr = 0;
 
         // Check for valid memory address when MemRead or MemWrite is active
-        if ((MemRead || MemWrite) && ((address > 1023) || (address[1:0] != 0))) begin
+        if ((MemRead || MemWrite) && (((address / 8) > 1023) || (address[1:0] != 0))) begin
             invMemAddr = 1;
         end
     end
