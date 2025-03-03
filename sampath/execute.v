@@ -33,7 +33,7 @@ module execute(
     ALU alu_shift (
         .a(immediate),
         .b(64'd1),
-        .alu_control_signal(4'b0001), // Logical Shift Left
+        .alu_control_signal(4'b0011), // Logical Shift Left
         .alu_result(shifted_immediate)
     );
     assign branch_signal = Branch & (alu_output == 0);

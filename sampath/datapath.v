@@ -64,8 +64,14 @@ module datapath(
         .invRegAddr(invRegAddr)
     );
 
-    assign immediate = MemWrite ? {{52{instruction[31]}}, instruction[31:25], instruction[11:7]} 
-    : {{52{instruction[31]}}, instruction[31:20]};
+    assign immediate = (alu_control_signal == 4'b0010) ?  
+                      (MemWrite ? {{52{instruction[31]}}, instruction[31:25], instruction[11:7]}  // Store
+                                : {{52{instruction[31]}}, instruction[31:20]})  // Load
+                    : (alu_control_signal == 4'b0110) ?  // Branch (e.g., BEQ)
+                      {{51{instruction[31]}}, instruction[7], instruction[30:25], instruction[11:8]}
+                    : 64'd0;
+
+
 
     assign invRegAddr = (rs1 > 5'd31) | (rs2 > 5'd31);
     assign rd1 = register[rs1];
@@ -108,6 +114,8 @@ module datapath(
         .out(wd)
     );
 
+    wire zero_write;
+    assign zero_write = (write_addr == 0);
 
     always @(posedge clock or posedge reset) begin
         if (reset)
@@ -117,7 +125,7 @@ module datapath(
     end
 
     always @(posedge clock) begin
-        if(RegWrite & !invRegAddr)
+        if(RegWrite & !invRegAddr & !zero_write)
             register[write_addr] <= wd;
         else if (MemWrite & !invMemAddr)
             data_memory[alu_output / 8] <= wd;    
