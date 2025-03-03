@@ -22,32 +22,32 @@ module datapath_tb;
         uut.PC = 64'd0;
         
         #5;
-        $display("PC: %d, rd1: %d, r2: %d", 
-                uut.PC, uut.MemtoReg, uut.rd2);
+        $display("PC: %d, rd1: %d, rd2: %d, alu_out: %d", 
+                uut.PC, uut.MemtoReg, uut.rd2, uut.alu_output);
         
         #10;
-        $display("PC: %d, rd1: %d, r2: %d", 
-                uut.PC, uut.rd1, uut.rd2);
+        $display("PC: %d, rd1: %d, rd2: %d, alu_out: %d", 
+                uut.PC, uut.MemtoReg, uut.rd2, uut.alu_output);
         
         #10;
-        $display("PC: %d, rd1: %d, r2: %d", 
-                uut.PC, uut.rd1, uut.rd2);
+        $display("PC: %d, rd1: %d, rd2: %d, alu_out: %d", 
+                uut.PC, uut.MemtoReg, uut.rd2, uut.alu_output);
 
         #10;
-        $display("PC: %d, rd1: %d, r2: %d", 
-                uut.PC, uut.rd1, uut.rd2);
+        $display("PC: %d, rd1: %d, rd2: %d, alu_out: %d", 
+                uut.PC, uut.MemtoReg, uut.rd2, uut.alu_output);
         
         #10;
-        $display("PC: %d, rd1: %d, r2: %d", 
-                uut.PC, uut.rd1, uut.rd2);
+        $display("PC: %d, rd1: %d, rd2: %d, alu_out: %d", 
+                uut.PC, uut.MemtoReg, uut.rd2, uut.alu_output);
 
         #10;
-        $display("PC: %d, rd1: %d, r2: %d", 
-                uut.PC, uut.rd1, uut.rd2);
+        $display("PC: %d, rd1: %d, rd2: %d, alu_out: %d", 
+                uut.PC, uut.MemtoReg, uut.rd2, uut.alu_output);
 
         #10;
-        $display("PC: %d, rd1: %d, r2: %d", 
-                uut.PC, uut.rd1, uut.rd2);
+        $display("PC: %d, rd1: %d, rd2: %d, alu_out: %d", 
+                uut.PC, uut.MemtoReg, uut.rd2, uut.alu_output);
         
         #50;
         $finish;
