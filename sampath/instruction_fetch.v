@@ -12,9 +12,10 @@ module instruction_fetch (
         instr_mem[3] = 32'h00000000;   
         instr_mem[4] = 32'h00c57533;  // AND x10, x10, x12 (Correct)
         instr_mem[5] = 32'h00D56533;  // OR  x10, x10, x13 (Correct)
-        instr_mem[6] = 32'h00452583;  // LD  x11, 0(x10)   (Incorrect, should be LD not LW)
+        instr_mem[6] = 32'h00452583;  // LD  x11, 4(x10)   (Incorrect, should be LD not LW)
         instr_mem[7] = 32'h00b52823;  // SD  x11, 16(x10)  (Incorrect encoding for SD)
         instr_mem[8] = 32'h40b50533;  // SUB x10, x10, x11 (Correct)
+        instr_mem[9] = 32'hFFFFFFFF;  
     end
 
 

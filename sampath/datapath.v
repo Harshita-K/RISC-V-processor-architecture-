@@ -123,9 +123,6 @@ module datapath(
         if (~invMemAddr)  begin
             if (MemRead) 
                 read_data <= data_memory[alu_output / 8]; // Read from memory
-            
-            if (MemWrite) 
-                data_memory[alu_output] <= rd2; // Write to memory
         end
     end
 
