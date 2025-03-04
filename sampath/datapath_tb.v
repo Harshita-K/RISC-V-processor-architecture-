@@ -22,32 +22,35 @@ module datapath_tb;
         uut.PC = 64'd0;
         
         #5;
-        $display("PC: %d, rd1: %d, rd2: %d, alu_out: %d", 
-                uut.PC, uut.rd1, uut.rd2, uut.alu_output);
-        
-        #10;
-        $display("PC: %d, rd1: %d, rd2: %d, alu_out: %d", 
-                uut.PC, uut.rd1, uut.rd2, uut.alu_output);
-        
-        #10;
-        $display("PC: %d, rd1: %d, rd2: %d, alu_out: %d", 
-                uut.PC, uut.rd1, uut.rd2, uut.alu_output);
+        $display("PC: %d, rd1: %d, rd2: %d, alu_out: %d, RegWrite: %b, MemRead: %b, MemtoReg: %b, MemWrite: %b, Branch: %b, read_data: %d, write_data: %d", 
+         uut.PC, uut.rd1, uut.rd2, uut.alu_output, uut.RegWrite, uut.MemRead, uut.MemtoReg, uut.MemWrite, uut.Branch, uut.read_data, uut.wd);
 
         #10;
-        $display("PC: %d, rd1: %d, rd2: %d, alu_out: %d", 
-                uut.PC, uut.rd1, uut.rd2, uut.alu_output);
+        
+        $display("PC: %d, rd1: %d, rd2: %d, alu_out: %d, RegWrite: %b, MemRead: %b, MemtoReg: %b, MemWrite: %b, Branch: %b, read_data: %d, write_data: %d", 
+         uut.PC, uut.rd1, uut.rd2, uut.alu_output, uut.RegWrite, uut.MemRead, uut.MemtoReg, uut.MemWrite, uut.Branch, uut.read_data, uut.wd);
+
+        #10;
+        $display("PC: %d, rd1: %d, rd2: %d, alu_out: %d, RegWrite: %b, MemRead: %b, MemtoReg: %b, MemWrite: %b, Branch: %b, read_data: %d, write_data: %d", 
+                uut.PC, uut.rd1, uut.rd2, uut.alu_output, uut.RegWrite, uut.MemRead, uut.MemtoReg, uut.MemWrite, uut.Branch, uut.read_data, uut.wd);
+
+        #10;
+        $display("PC: %d, rd1: %d, rd2: %d, alu_out: %d, RegWrite: %b, MemRead: %b, MemtoReg: %b, MemWrite: %b, Branch: %b, read_data: %d, write_data: %d", 
+                uut.PC, uut.rd1, uut.rd2, uut.alu_output, uut.RegWrite, uut.MemRead, uut.MemtoReg, uut.MemWrite, uut.Branch, uut.read_data, uut.wd);
+
         
         #10;
-        $display("PC: %d, rd1: %d, rd2: %d, alu_out: %d", 
-                uut.PC, uut.rd1, uut.rd2, uut.alu_output);
+        $display("PC: %d, rd1: %d, rd2: %d, alu_out: %d, RegWrite: %b, MemRead: %b, MemtoReg: %b, MemWrite: %b, Branch: %b, read_data: %d, write_data: %d", 
+         uut.PC, uut.rd1, uut.rd2, uut.alu_output, uut.RegWrite, uut.MemRead, uut.MemtoReg, uut.MemWrite, uut.Branch, uut.read_data, uut.wd);
 
         #10;
-        $display("PC: %d, rd1: %d, rd2: %d, alu_out: %d", 
-                uut.PC, uut.rd2, uut.rd2, uut.alu_output);
+        $display("PC: %d, rd1: %d, rd2: %d, alu_out: %d, RegWrite: %b, MemRead: %b, MemtoReg: %b, MemWrite: %b, Branch: %b, read_data: %d, write_data: %d",
+                uut.PC, uut.rd1, uut.rd2, uut.alu_output, uut.RegWrite, uut.MemRead, uut.MemtoReg, uut.MemWrite, uut.Branch, uut.read_data, uut.wd);
 
         #10;
-        $display("PC: %d, rd1: %d, rd2: %d, alu_out: %d", 
-                uut.PC, uut.rd1, uut.rd2, uut.alu_output);
+        $display("PC: %d, rd1: %d, rd2: %d, alu_out: %d, RegWrite: %b, MemRead: %b, MemtoReg: %b, MemWrite: %b, Branch: %b, read_data: %d, write_data: %d", 
+                uut.PC, uut.rd1, uut.rd2, uut.alu_output, uut.RegWrite, uut.MemRead, uut.MemtoReg, uut.MemWrite, uut.Branch, uut.read_data, uut.wd);
+
         
         #50;
         $finish;

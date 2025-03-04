@@ -16,27 +16,15 @@ module datapath(
     reg [63:0] data_memory [0:1023];
 
     initial begin
-        // Initialize registers to specific values
-        register[0]  = 64'h0000000000000000; // x0 (zero register, always 0)
-        register[5]  = 64'h0000000000000005;
-        register[4]  = 64'h0000000000000010;
+       register[0]  = 64'h0000000000000000; // x0 (zero register, always 0)
+        register[5]  = 64'h0000000000000005; // x5  = 5
         register[10] = 64'h000000000000000A; // x10 = 10
         register[11] = 64'h000000000000000B; // x11 = 11
         register[12] = 64'h000000000000000C; // x12 = 12
-        register[13] = 64'h0000000000000010; // x13 = 16
-
-        // Initialize data memory to specific values
-        data_memory[0] = 64'h0000000000000001;
-        data_memory[1] = 64'h0000000000000002;
-        data_memory[2] = 64'h0000000000000003;
-        data_memory[3] = 64'h0000000000000004;
-        data_memory[4] = 64'h0000000000000005;
-        data_memory[5] = 64'h0000000000000006;
-        data_memory[6] = 64'h0000000000000007;
-        data_memory[7] = 64'h0000000000000008;
-        data_memory[8] = 64'h0000000000000009;
-        data_memory[9] = 64'h000000000000000A;
-        data_memory[20] = 64'h000000000000000A;
+        register[13] = 64'h000000000000000D; // x13 = 13
+        register[14] = 64'h00000000000000F0; // x14 = 14
+        register[15] = 64'h00000000000000F8; // x15 = 15
+        data_memory[31] = 64'h000000000000001F;
     end
 
     
@@ -89,7 +77,7 @@ module datapath(
 
     assign invRegAddr = (rs1 > 5'd31) | (rs2 > 5'd31);
     assign rd1 = register[rs1];
-
+    assign w1 = register[rs2];
     
     Mux alu_mux (
         .input1(register[rs2]),
@@ -123,6 +111,8 @@ module datapath(
         if (~invMemAddr)  begin
             if (MemRead) 
                 read_data <= data_memory[alu_output / 8]; // Read from memory
+            else if (MemWrite & !invMemAddr)
+                data_memory[alu_output / 8] <= w1;    
         end
     end
 
@@ -144,8 +134,6 @@ module datapath(
     always @(posedge clock) begin
         if(RegWrite & !invRegAddr)
             register[write_addr] <= wd;
-        else if (MemWrite & !invMemAddr)
-            data_memory[alu_output / 8] <= wd;    
     end
     
     
