@@ -47,34 +47,3 @@ always @(posedge clk or posedge rst) begin
 end
 
 endmodule
-
-module instruction_fetch_stage (
-    input wire clk,
-    input wire rst,
-    input wire [63:0] PC,
-
-    output reg [63:0] pc_out,
-    output reg [31:0] instruction_out,
-    output reg invAddr
-);
-
-    wire [31:0] instruction;
-
-    // Fetch Unit Instance
-    instruction_fetch fetch_unit (
-        .PC(PC),
-        .instruction(instruction),
-        .invAddr(invAddr)
-    );
-
-    // IF/ID Pipeline Register
-    IF_ID_Reg if_id_register (
-        .clk(clk),
-        .rst(rst),
-        .pc_in(PC),
-        .instruction_in(instruction),
-        .pc_out(pc_out),
-        .instruction_out(instruction_out)
-    );
-
-endmodule

@@ -102,7 +102,7 @@ module ID_EX_Reg (
     input wire [63:0] pc_in,
     input wire [31:0] read_data1_in,
     input wire [31:0] read_data2_in,
-    input wire [63:0] imm_val_in,
+    input wire [31:0] imm_val_in,
     input wire [4:0] write_reg_in,
     input wire [9:0] alu_control_in,
     input wire alusrc_in,
@@ -125,7 +125,6 @@ module ID_EX_Reg (
     output reg memtoreg_out,
     output reg regwrite_out
 );
-
 always @(posedge clk or posedge rst) begin
     if (rst) begin
         pc_out         <= 64'b0;
@@ -144,7 +143,7 @@ always @(posedge clk or posedge rst) begin
         pc_out         <= pc_in;
         read_data1_out <= read_data1_in;
         read_data2_out <= read_data2_in;
-        imm_val_out    <= imm_val_in;
+        imm_val_out    <= {{32{imm_val_in[31]}}, imm_val_in};
         write_reg_out  <= write_reg_in;
         alu_control_out <= alu_control_in;
         alusrc_out     <= alusrc_in;
@@ -156,109 +155,4 @@ always @(posedge clk or posedge rst) begin
     end
 end
 
-endmodule
-
-module decode_stage (
-    input wire clk,
-    input wire rst,
-    input wire [63:0] pc_in,
-    input wire [31:0] instruction,
-    input wire [31:0] read_data1,  
-    input wire [31:0] read_data2,  
-    input wire [63:0] imm_val,     
-
-    output reg [63:0] pc_out,
-    output reg [31:0] read_data1_out,
-    output reg [31:0] read_data2_out,
-    output reg [63:0] imm_val_out,
-    output reg [4:0] write_reg_out,
-    output reg [9:0] alu_control_out,
-    output reg alusrc_out,
-    output reg branch_out,
-    output reg memwrite_out,
-    output reg memread_out,
-    output reg memtoreg_out,
-    output reg regwrite_out,
-    output reg invOp_out,
-    output reg invFunc_out,
-    output reg invRegAddr_out
-);
-
-    wire [4:0] rs1, rs2, write_reg;
-    wire [9:0] alu_control;
-    wire alusrc, regwrite, memread, memtoreg, memwrite, branch;
-    wire invOp, invFunc, invRegAddr;
-
-    // Instruction Decode Unit
-    instruction_decode decode_unit (
-        .instruction(instruction),
-        .rs1(rs1),
-        .rs2(rs2),
-        .write_addr(write_reg),
-        .alu_control(alu_control),
-        .ALUSrc(alusrc),
-        .RegWrite(regwrite),
-        .MemRead(memread),
-        .MemtoReg(memtoreg),
-        .MemWrite(memwrite),
-        .Branch(branch),
-        .invOp(invOp),
-        .invFunc(invFunc),
-        .invRegAddr(invRegAddr)
-    );
-
-    // ID/EX Pipeline Register
-    ID_EX_Reg id_ex_register (
-        .clk(clk),
-        .rst(rst),
-        .pc_in(pc_in),
-        .read_data1_in(read_data1),
-        .read_data2_in(read_data2),
-        .imm_val_in(imm_val),
-        .write_reg_in(write_reg),
-        .alu_control_in(alu_control), // Now directly passing ALU control
-        .alusrc_in(alusrc),
-        .branch_in(branch),
-        .memwrite_in(memwrite),
-        .memread_in(memread),
-        .memtoreg_in(memtoreg),
-        .regwrite_in(regwrite),
-        .pc_out(pc_out),
-        .read_data1_out(read_data1_out),
-        .read_data2_out(read_data2_out),
-        .imm_val_out(imm_val_out),
-        .write_reg_out(write_reg_out),
-        .alu_control_out(alu_control_out),
-        .alusrc_out(alusrc_out),
-        .branch_out(branch_out),
-        .memwrite_out(memwrite_out),
-        .memread_out(memread_out),
-        .memtoreg_out(memtoreg_out),
-        .regwrite_out(regwrite_out)
-    );
-
-    // Assign invalid instruction signals
-    always @(posedge clk or posedge rst) begin
-        if (rst) begin
-            invOp_out      <= 1'b0;
-            invFunc_out    <= 1'b0;
-            invRegAddr_out <= 1'b0;
-        end else begin
-            invOp_out      <= invOp;
-            invFunc_out    <= invFunc;
-            invRegAddr_out <= invRegAddr;
-        end
-    end
-
-endmodule
-
-
-// Fixed Multiplexer Module (No Changes Needed)
-module Mux(
-    input [63:0] input1,
-    input [63:0] input2,
-    input select,
-    output [63:0] out
-);
-    assign out = select ? input2 : input1;
 endmodule
