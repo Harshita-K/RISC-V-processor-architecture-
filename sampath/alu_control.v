@@ -1,5 +1,5 @@
 module alu_control (
-    input [31:0] instruction,
+    input [9:0] alu_control,
     input [1:0] alu_op,
     output reg [3:0] alu_control_signal,
     output reg invFunc
@@ -12,7 +12,7 @@ module alu_control (
         else if (alu_op == 2'b01) 
             alu_control_signal = 4'b0110; // SUB operation
         else if (alu_op == 2'b10) begin
-            case ({instruction[31:25], instruction[14:12]})
+            case (alu_control)
                 10'b0000000000: alu_control_signal = 4'b0010; // ADD
                 10'b0100000000: alu_control_signal = 4'b0110; // SUB
                 10'b0000000110: alu_control_signal = 4'b0001; // OR

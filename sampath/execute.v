@@ -54,3 +54,130 @@ module execute(
     );
 
 endmodule
+
+module EX_MEM_Reg (
+    input wire clk,
+    input wire rst,
+    input wire [63:0] pc_in,
+    input wire zero_in,
+    input wire [31:0] alu_result_in,
+    input wire [31:0] read_data2_in,
+    input wire [4:0] write_reg_in,
+    input wire branch_in,
+    input wire memwrite_in,
+    input wire memread_in,
+    input wire memtoreg_in,
+    input wire regwrite_in,
+    
+    output reg [63:0] pc_out,
+    output reg zero_out,
+    output reg [31:0] alu_result_out,
+    output reg [31:0] read_data2_out,
+    output reg [4:0] write_reg_out,
+    output reg branch_out,
+    output reg memwrite_out,
+    output reg memread_out,
+    output reg memtoreg_out,
+    output reg regwrite_out
+);
+
+always @(posedge clk or posedge rst) begin
+    if (rst) begin
+        pc_out         <= 64'b0;
+        zero_out       <= 1'b0;
+        alu_result_out <= 32'b0;
+        read_data2_out <= 32'b0;
+        write_reg_out  <= 5'b0;
+        branch_out     <= 1'b0;
+        memwrite_out   <= 1'b0;
+        memread_out    <= 1'b0;
+        memtoreg_out   <= 1'b0;
+        regwrite_out   <= 1'b0;
+    end else begin
+        pc_out         <= pc_in;
+        zero_out       <= zero_in;
+        alu_result_out <= alu_result_in;
+        read_data2_out <= read_data2_in;
+        write_reg_out  <= write_reg_in;
+        branch_out     <= branch_in;
+        memwrite_out   <= memwrite_in;
+        memread_out    <= memread_in;
+        memtoreg_out   <= memtoreg_in;
+        regwrite_out   <= regwrite_in;
+    end
+end
+
+endmodule
+
+module execute_stage (
+    input wire clk,
+    input wire rst,
+    input wire [3:0] alu_control_signal,
+    input wire [63:0] rd1,
+    input wire [63:0] rd2,
+    input wire [63:0] PC,
+    input wire [63:0] immediate,
+    input wire branch_in,
+    input wire memwrite_in,
+    input wire memread_in,
+    input wire memtoreg_in,
+    input wire regwrite_in,
+    input wire [4:0] write_reg_in,
+
+    output reg [63:0] pc_out,
+    output reg zero_out,
+    output reg [31:0] alu_result_out,
+    output reg [31:0] read_data2_out,
+    output reg [4:0] write_reg_out,
+    output reg branch_out,
+    output reg memwrite_out,
+    output reg memread_out,
+    output reg memtoreg_out,
+    output reg regwrite_out
+);
+
+    wire [63:0] alu_output, next_PC;
+    wire zero_flag;
+
+    // Execute Unit Instance
+    execute alu_execute (
+        .alu_control_signal(alu_control_signal),
+        .rd1(rd1),
+        .rd2(rd2),
+        .PC(PC),
+        .immediate(immediate),
+        .Branch(branch_in),
+        .alu_output(alu_output),
+        .next_PC(next_PC)
+    );
+
+    // Zero Flag Calculation (ALU output == 0)
+    assign zero_flag = (alu_output == 64'b0) ? 1'b1 : 1'b0;
+
+    // EX/MEM Pipeline Register Instance
+    EX_MEM_Reg ex_mem_register (
+        .clk(clk),
+        .rst(rst),
+        .pc_in(next_PC),  // Pass updated PC from ALU
+        .zero_in(zero_flag),
+        .alu_result_in(alu_output[31:0]),  // Truncate to 32-bit if needed
+        .read_data2_in(rd2[31:0]),  // Truncate to 32-bit if needed
+        .write_reg_in(write_reg_in),
+        .branch_in(branch_in),
+        .memwrite_in(memwrite_in),
+        .memread_in(memread_in),
+        .memtoreg_in(memtoreg_in),
+        .regwrite_in(regwrite_in),
+        .pc_out(pc_out),
+        .zero_out(zero_out),
+        .alu_result_out(alu_result_out),
+        .read_data2_out(read_data2_out),
+        .write_reg_out(write_reg_out),
+        .branch_out(branch_out),
+        .memwrite_out(memwrite_out),
+        .memread_out(memread_out),
+        .memtoreg_out(memtoreg_out),
+        .regwrite_out(regwrite_out)
+    );
+
+endmodule

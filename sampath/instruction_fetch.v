@@ -15,8 +15,6 @@ module instruction_fetch (
        instr_mem[6] = 32'h00B282B3;  // SUB x10, x10, x11 (Correct)  
     end
 
-
-
     always @(*) begin
         if (PC[1:0] != 0 || PC[63:2] > 1023) begin
             invAddr = 1'b1;
@@ -26,4 +24,57 @@ module instruction_fetch (
             instruction = instr_mem[PC[11:2]];  // Fetch instruction
         end
     end
+endmodule
+
+module IF_ID_Reg (
+    input wire clk,
+    input wire rst,
+    input wire [63:0] pc_in,
+    input wire [31:0] instruction_in,
+
+    output reg [63:0] pc_out,
+    output reg [31:0] instruction_out
+);
+
+always @(posedge clk or posedge rst) begin
+    if (rst) begin
+        pc_out         <= 64'b0;
+        instruction_out <= 32'b0;
+    end else begin
+        pc_out         <= pc_in;
+        instruction_out <= instruction_in;
+    end
+end
+
+endmodule
+
+module instruction_fetch_stage (
+    input wire clk,
+    input wire rst,
+    input wire [63:0] PC,
+
+    output reg [63:0] pc_out,
+    output reg [31:0] instruction_out,
+    output reg invAddr
+);
+
+    wire [31:0] instruction;
+
+    // Fetch Unit Instance
+    instruction_fetch fetch_unit (
+        .PC(PC),
+        .instruction(instruction),
+        .invAddr(invAddr)
+    );
+
+    // IF/ID Pipeline Register
+    IF_ID_Reg if_id_register (
+        .clk(clk),
+        .rst(rst),
+        .pc_in(PC),
+        .instruction_in(instruction),
+        .pc_out(pc_out),
+        .instruction_out(instruction_out)
+    );
+
 endmodule
