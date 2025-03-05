@@ -40,7 +40,12 @@ always @(posedge clk or posedge rst) begin
     if (rst) begin
         pc_out         <= 64'b0;
         instruction_out <= 32'b0;
-    end else begin
+    end
+    else if(IF_ID_Write) begin
+        pc_out         <= pc_in;
+        instruction_out <= instruction_in;
+    end
+    else begin
         pc_out         <= pc_in;
         instruction_out <= instruction_in;
     end

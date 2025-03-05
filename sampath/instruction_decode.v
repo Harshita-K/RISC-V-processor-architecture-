@@ -4,6 +4,7 @@ module instruction_decode(
     output [4:0] rs2,
     output [4:0] write_addr,
     output [9:0] alu_control, // Updated to 10-bit concatenation
+    output [1:0] ALUOp,
     output ALUSrc,
     output RegWrite,
     output MemRead,
@@ -34,14 +35,6 @@ module instruction_decode(
         .Branch(Branch),
         .ALUOp(ALUOp),
         .invOp(invOp)
-    );
-    
-    // Instantiate the ALU Control
-    alu_control ALU_CTRL (
-        .instruction(instruction),
-        .alu_op(ALUOp),
-        .invFunc(invFunc),
-        .alu_control_signal(alu_control_signal)
     );
 
 endmodule
@@ -100,8 +93,8 @@ module ID_EX_Reg (
     input wire clk,
     input wire rst,
     input wire [63:0] pc_in,
-    input wire [31:0] read_data1_in,
-    input wire [31:0] read_data2_in,
+    input wire [63:0] read_data1_in,
+    input wire [63:0] read_data2_in,
     input wire [31:0] imm_val_in,
     input wire [4:0] write_reg_in,
     input wire [9:0] alu_control_in,
@@ -111,10 +104,13 @@ module ID_EX_Reg (
     input wire memread_in,
     input wire memtoreg_in,
     input wire regwrite_in,
+    input wire [1:0] alu_op_in,
+    input wire [4:0] register_rs1_in;
+    input wire [4:0] register_rs2_in;
 
     output reg [63:0] pc_out,
-    output reg [31:0] read_data1_out,
-    output reg [31:0] read_data2_out,
+    output reg [63:0] read_data1_out,
+    output reg [63:0] read_data2_out,
     output reg [63:0] imm_val_out,
     output reg [4:0] write_reg_out,
     output reg [9:0] alu_control_out,
@@ -124,6 +120,10 @@ module ID_EX_Reg (
     output reg memread_out,
     output reg memtoreg_out,
     output reg regwrite_out
+    output reg [4:0] register_rs1_out;
+    output reg [4:0] register_rs2_out;
+    output reg [1:0] alu_op_out;
+
 );
 always @(posedge clk or posedge rst) begin
     if (rst) begin
@@ -139,6 +139,9 @@ always @(posedge clk or posedge rst) begin
         memread_out    <= 1'b0;
         memtoreg_out   <= 1'b0;
         regwrite_out   <= 1'b0;
+        register_rs1_out <= 5'b0;
+        register_rs2_out <= 5'b0;
+        alu_op_out <= 2'b0;
     end else begin
         pc_out         <= pc_in;
         read_data1_out <= read_data1_in;
@@ -152,7 +155,20 @@ always @(posedge clk or posedge rst) begin
         memread_out    <= memread_in;
         memtoreg_out   <= memtoreg_in;
         regwrite_out   <= regwrite_in;
+        register_rs1_out <= register_rs1_in;
+        register_rs2_out <= register_rs2_in;
+        alu_op_out <= alu_op_in;
     end
 end
 
 endmodule
+
+module Mux(
+    input [63:0] input1,
+    input [63:0] input2,
+    input select,
+    output [63:0] out
+);
+    assign out = select ? input2 : input1;
+endmodule
+

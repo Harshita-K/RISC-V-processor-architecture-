@@ -4,6 +4,8 @@
 `include "alu.v"
 `include "execute.v"
 `include "memory_access.v"
+`include "hazard_unit.v"
+`include "fwdunit.v"
 
 module datapath(
     input wire clock,
@@ -38,6 +40,17 @@ module datapath(
     wire [63:0] pc_if_id;
     wire [31:0] instruction_if_id;
 
+    wire PCWrite, IF_ID_Write, stall;
+    HazardUnit hazard_unit (
+        .PCWrite(PCWrite),
+        .IF_ID_Write(IF_ID_Write),
+        .ID_EX_MemRead(memread_id_ex),
+        .ID_EX_RegisterRd(write_reg_id_ex),
+        .IF_ID_RegisterRs1(instruction_if_id[19:15]),
+        .IF_ID_RegisterRs2(instruction_if_id[24:20]),
+        .stall(stall)
+    );
+
     IF_ID_Reg if_id_register (
         .clk(clock),
         .rst(reset),
@@ -51,6 +64,7 @@ module datapath(
     wire [4:0] rs1, rs2, write_reg;
     wire [9:0] alu_control;
     wire alusrc, regwrite, memread, memtoreg, memwrite, branch, invOp, invFunc, invRegAddr;
+    wire [1:0] ALUOp;
 
     instruction_decode decode_unit (
         .instruction(instruction_if_id),
@@ -59,6 +73,7 @@ module datapath(
         .write_addr(write_reg),
         .alu_control(alu_control),
         .ALUSrc(alusrc),
+        .ALUOp(ALUOp),
         .RegWrite(regwrite),
         .MemRead(memread),
         .MemtoReg(memtoreg),
@@ -69,12 +84,36 @@ module datapath(
         .invRegAddr(invRegAddr)
     );
 
+
     // ID/EX Pipeline Register
     wire [63:0] pc_id_ex, rd1_id_ex, rd2_id_ex, imm_val_id_ex;
     wire [9:0] alu_control_id_ex;
-    wire [4:0] write_reg_id_ex;
+    wire [4:0] write_reg_id_ex, register_rs1_id_ex, register_rs2_id_ex;
     wire alusrc_id_ex, branch_id_ex, memwrite_id_ex, memread_id_ex, memtoreg_id_ex, regwrite_id_ex;
 
+    wire control_after_hazard;
+    assign control_after_hazard = (stall) ? 0 : 1;
+
+    if(control_after_hazard) begin
+        assign alusrc = alusrc;
+        assign ALUOp = ALUOp;
+        assign branch= branch;
+        assign memwrite = memwrite;
+        assign memread = memread;
+        assign memtoreg = memtoreg;
+        assign regwrite = regwrite;
+    end
+    else if(!control_after_hazard) begin
+        assign alusrc = 0;
+        assign ALUOp = 0;
+        assign branch= 0;
+        assign memwrite = 0;
+        assign memread = 0;
+        assign memtoreg = 0;
+        assign regwrite = 0;
+    end
+
+    wire [1:0] alu_op_id_ex;
     ID_EX_Reg id_ex_register (
         .clk(clock),
         .rst(reset),
@@ -90,6 +129,9 @@ module datapath(
         .memread_in(memread),
         .memtoreg_in(memtoreg),
         .regwrite_in(regwrite),
+        .register_rs1_in(instruction_if_id[19:15]),
+        .register_rs2_in(instruction_if_id[24:20]),
+        .alu_op_in(ALUOp)
         .pc_out(pc_id_ex),
         .read_data1_out(rd1_id_ex),
         .read_data2_out(rd2_id_ex),
@@ -101,7 +143,17 @@ module datapath(
         .memwrite_out(memwrite_id_ex),
         .memread_out(memread_id_ex),
         .memtoreg_out(memtoreg_id_ex),
-        .regwrite_out(regwrite_id_ex)
+        .regwrite_out(regwrite_id_ex),
+        .register_rs1_out(register_rs1_id_ex),
+        .register_rs2_out(register_rs2_id_ex),
+        .alu_op_out(alu_op_id_ex)
+    );
+
+    alu_control ALU_CTRL (
+        .instruction(instruction_id_ex),
+        .alu_op(alu_op_id_ex),
+        .invFunc(invFunc),
+        .alu_control_signal(alu_control_signal)
     );
 
     assign imm_val_id_ex = MemWrite ? {{52{instruction[31]}}, instruction[31:25], instruction[11:7]}  // Store
@@ -123,13 +175,29 @@ module datapath(
         .out(rd2)
     );
 
+    MUX3 mux3_alu_in1 (
+        .in0(rd1),
+        .in1(wd),
+        .in2(alu_result_ex_mem),
+        .sel(ForwardA),
+        .out(alu_in1)
+    );
+
+     MUX3 mux3_alu_in2 (
+        .in0(rd2),
+        .in1(wd),
+        .in2(alu_result_ex_mem),
+        .sel(ForwardB),
+        .out(alu_in2)
+    );
+
     // Execute Stage
     wire [63:0] alu_output, next_PC;
     
     execute execute_unit (
         .alu_control_signal(alu_control_id_ex),
-        .rd1(rd1_id_ex),
-        .rd2(rd2_id_ex),
+        .rd1(alu_in1),
+        .rd2(alu_in2),
         .PC(pc_id_ex),
         .immediate(imm_val_id_ex),
         .Branch(branch_id_ex),
@@ -165,6 +233,19 @@ module datapath(
         .memtoreg_out(memtoreg_ex_mem),
         .regwrite_out(regwrite_ex_mem)
     );
+
+    wire [1:0] ForwardA, ForwardB;
+
+    Forwarding_Unit fwdunit(
+        .ID_EX_Rs1(register_rs1_id_ex),
+        .ID_EX_Rs2(register_rs2_id_ex),
+        .EX_MEM_Rd(write_reg_ex_mem),
+        .MEM_WB_Rd(write_reg_mem_wb),
+        .EX_MEM_RegWrite(regwrite_ex_mem),
+        .MEM_WB_RegWrite(regwrite_mem_wb),
+        .ForwardA(ForwardA),
+        .ForwardB(ForwardB)
+    )
     
     wire invMemAddr;
     // Memory Access Stage
@@ -209,11 +290,13 @@ module datapath(
     );
 
 
-    always @(posedge clock or posedge reset) begin
-        if (reset)
-            PC <= 64'd0; // Reset PC to 0
-        else
-            PC <= next_PC; // Update PC based on execution stage output
+    always @(posedge clk) begin
+    if (reset)
+        PC <= 0;
+    else if (PCWrite)
+        PC <= next_PC; // or your next-PC logic
+    else
+        PC <= PC; // or your PC-hold logic
     end
 
     always @(posedge clock) begin
