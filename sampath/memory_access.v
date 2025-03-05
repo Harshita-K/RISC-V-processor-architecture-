@@ -21,14 +21,14 @@ endmodule
 module MEM_WB_Reg (
     input wire clk,
     input wire rst,
-    input wire [31:0] alu_result_in,
-    input wire [31:0] read_data_in,
+    input wire [63:0] alu_result_in,
+    input wire [63:0] read_data_in,
     input wire [4:0] write_reg_in,
     input wire memtoreg_in,
     input wire regwrite_in,
 
-    output reg [31:0] alu_result_out,
-    output reg [31:0] read_data_out,
+    output reg [63:0] alu_result_out,
+    output reg [63:0] read_data_out,
     output reg [4:0] write_reg_out,
     output reg memtoreg_out,
     output reg regwrite_out

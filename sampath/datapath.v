@@ -87,7 +87,7 @@ module datapath(
 
     // ID/EX Pipeline Register
     wire [63:0] pc_id_ex, rd1_id_ex, rd2_id_ex, imm_val_id_ex;
-    wire [3:0] alu_control_id_ex;
+    wire [9:0] alu_control_id_ex;
     wire [4:0] write_reg_id_ex, register_rs1_id_ex, register_rs2_id_ex;
     wire alusrc_id_ex, branch_id_ex, memwrite_id_ex, memread_id_ex, memtoreg_id_ex, regwrite_id_ex;
 
@@ -137,8 +137,9 @@ module datapath(
         .register_rs2_out(register_rs2_id_ex),
         .alu_op_out(alu_op_id_ex)
     );
-
+    wire [3:0] alu_control_signal;
     alu_control ALU_CTRL (
+        .alu_control(alu_control_id_ex),
         .alu_op(alu_op_id_ex),
         .invFunc(invFunc),
         .alu_control_signal(alu_control_signal)
@@ -151,12 +152,15 @@ module datapath(
                     (alu_control_signal == 4'b0110) ? {{51{instruction[31]}}, instruction[7], instruction[30:25], instruction[11:8]}  // Branch
                                                     : 64'd0;
 
-
+    wire [63:0] rd1, rd2, wd, alu_in1, alu_in2;
     assign invRegAddr = (rs1 > 5'd31) | (rs2 > 5'd31);
     assign rd1 = rd1_id_ex;
     assign w1 = rd2_id_ex;
     
     assign rd2 = (alusrc_id_ex) ? immediate : w1;
+
+    // Execute Stage
+    wire [63:0] alu_output, next_PC;
 
     MUX3 mux3_alu_in1 (
         .in0(rd1),
@@ -173,33 +177,32 @@ module datapath(
         .sel(ForwardB),
         .out(alu_in2)
     );
-
-    // Execute Stage
-    wire [63:0] alu_output, next_PC;
-    
+    wire zer0_flag;
     execute execute_unit (
-        .alu_control_signal(alu_control_id_ex),
+        .alu_control_signal(alu_control_signal),
         .rd1(alu_in1),
         .rd2(alu_in2),
         .PC(pc_id_ex),
+        .ALUOp(alu_op_id_ex),
         .immediate(imm_val_id_ex),
         .Branch(branch_id_ex),
         .alu_output(alu_output),
-        .next_PC(next_PC)
+        .next_PC(next_PC),
+        .zero(zer0_flag)
     );
 
     wire [63:0] pc_ex_mem;
-    wire [31:0] alu_result_ex_mem, read_data2_ex_mem;
+    wire [63:0] alu_result_ex_mem, read_data2_ex_mem;
     wire [4:0] write_reg_ex_mem;
     wire branch_ex_mem, memwrite_ex_mem, memread_ex_mem, memtoreg_ex_mem, regwrite_ex_mem;
-
+    wire zer0_id_ex;
     EX_MEM_Reg ex_mem_register (
         .clk(clock),
         .rst(reset),
         .pc_in(next_PC),
-        .zero_in(alu_output == 0),
-        .alu_result_in(alu_output[31:0]),
-        .read_data2_in(rd2_id_ex[31:0]),
+        .zero_in(zero_flag),
+        .alu_result_in(alu_output[63:0]),
+        .read_data2_in(rd2_id_ex[63:0]),
         .write_reg_in(write_reg_id_ex),
         .branch_in(branch_id_ex),
         .memwrite_in(memwrite_id_ex),
@@ -207,6 +210,7 @@ module datapath(
         .memtoreg_in(memtoreg_id_ex),
         .regwrite_in(regwrite_id_ex),
         .pc_out(pc_ex_mem),
+        .zero_out(zer0_ex_mem),
         .alu_result_out(alu_result_ex_mem),
         .read_data2_out(read_data2_ex_mem),
         .write_reg_out(write_reg_ex_mem),
@@ -215,6 +219,21 @@ module datapath(
         .memread_out(memread_ex_mem),
         .memtoreg_out(memtoreg_ex_mem),
         .regwrite_out(regwrite_ex_mem)
+    );
+    
+    assign branch_signal = branch_ex_mem & zer0_ex_mem;
+    wire [63:0] updated_PC, next_PC_final;
+    ALU alu_pc_update (
+        .a(PC),
+        .b(64'd4),
+        .alu_control_signal(4'b0010), // Addition
+        .alu_result(updated_PC)
+    );
+    Mux next_pc_mux (
+        .input1(updated_PC),
+        .input2(pc_ex_mem),
+        .select(branch_signal),
+        .out(next_PC_final)
     );
 
     wire [1:0] ForwardA, ForwardB;
@@ -250,7 +269,8 @@ module datapath(
                 data_memory[alu_result_ex_mem / 8] <= w1;    
         end
     end
-
+    wire [63:0] alu_result_mem_wb, read_data_mem_wb;
+    wire [4:0] write_reg_mem_wb;
     MEM_WB_Reg mem_wb_register (
         .clk(clock),
         .rst(reset),
@@ -278,7 +298,7 @@ module datapath(
     if (reset)
         PC <= 0;
     else if (PCWrite)
-        PC <= next_PC; // or your next-PC logic
+        PC <= next_PC_final; // or your next-PC logic
     else
         PC <= PC; // or your PC-hold logic
     end
