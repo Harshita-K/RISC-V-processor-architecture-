@@ -5,15 +5,14 @@ module execute(
     input [63:0] PC,
     input [63:0] immediate,
     input Branch, 
-    input [1:0] ALUOp
+    input [1:0] ALUOp,
     output [63:0] alu_output,
     output [63:0] next_PC, 
-    output zero;
+    output reg zero
 );
     
     wire [63:0] updated_PC;
     wire [63:0] branch_target;
-    wire zero;
     // ALU computation for normal operations
     ALU alu_main (
         .a(rd1),
@@ -21,12 +20,14 @@ module execute(
         .alu_control_signal(alu_control_signal),
         .alu_result(alu_output)
     );
-    if(ALUOp == 2'b01) begin
-        if(alu_output == 0) begin
-            assign zero = 1;
-        end
-        else begin
-            assign zero = 0;
+    always @(*) begin
+        if(ALUOp == 2'b01) begin
+            if(alu_output == 0)
+                zero = 1;
+            else
+                zero = 0;
+        end else begin
+            zero = 0; // or any default behavior
         end
     end
 
