@@ -17,7 +17,8 @@ module datapath(
     reg [63:0] data_memory [0:1023];
 
     initial begin
-       register[0]  = 64'h0000000000000000; // x0 (zero register, always 0)
+        PC = 64'h0;
+        register[0]  = 64'h0000000000000000; // x0 (zero register, always 0)
         register[5]  = 64'h0000000000000005; // x5  = 5
         register[10] = 64'h000000000000000A; // x10 = 10
         register[11] = 64'h000000000000000B; // x11 = 11
@@ -39,17 +40,9 @@ module datapath(
 
     wire [63:0] pc_if_id;
     wire [31:0] instruction_if_id;
-
     wire PCWrite, IF_ID_Write, stall;
-    HazardUnit hazard_unit (
-        .PCWrite(PCWrite),
-        .IF_ID_Write(IF_ID_Write),
-        .ID_EX_MemRead(memread_id_ex),
-        .ID_EX_RegisterRd(write_reg_id_ex),
-        .IF_ID_RegisterRs1(instruction_if_id[19:15]),
-        .IF_ID_RegisterRs2(instruction_if_id[24:20]),
-        .stall(stall)
-    );
+
+    
 
     IF_ID_Reg if_id_register (
         .clk(clock),
@@ -91,16 +84,15 @@ module datapath(
     wire [4:0] write_reg_id_ex, register_rs1_id_ex, register_rs2_id_ex;
     wire alusrc_id_ex, branch_id_ex, memwrite_id_ex, memread_id_ex, memtoreg_id_ex, regwrite_id_ex;
 
-    wire control_after_hazard;
-    assign control_after_hazard = (stall) ? 0 : 1;
+    assign alusrc_id_ex   = stall ? 0 : alusrc;
+    assign ALUOp_id_ex    = stall ? 0 : ALUOp;
+    assign branch_id_ex   = stall ? 0 : branch;
+    assign memwrite_id_ex = stall ? 0 : memwrite;
+    assign memread_id_ex  = stall ? 0 : memread;
+    assign memtoreg_id_ex = stall ? 0 : memtoreg;
+    assign regwrite_id_ex = stall ? 0 : regwrite;
 
-    assign alusrc   = control_after_hazard ? alusrc : 0;
-    assign ALUOp    = control_after_hazard ? ALUOp : 0;
-    assign branch   = control_after_hazard ? branch : 0;
-    assign memwrite = control_after_hazard ? memwrite : 0;
-    assign memread  = control_after_hazard ? memread : 0;
-    assign memtoreg = control_after_hazard ? memtoreg : 0;
-    assign regwrite = control_after_hazard ? regwrite : 0;
+
 
     wire [1:0] alu_op_id_ex;
     ID_EX_Reg id_ex_register (
@@ -152,7 +144,7 @@ module datapath(
                     (alu_control_signal == 4'b0110) ? {{51{instruction[31]}}, instruction[7], instruction[30:25], instruction[11:8]}  // Branch
                                                     : 64'd0;
 
-    wire [63:0] rd1, rd2, wd, alu_in1, alu_in2;
+    wire [63:0] rd1, rd2, wd, w1, alu_in1, alu_in2;
     assign invRegAddr = (rs1 > 5'd31) | (rs2 > 5'd31);
     assign rd1 = rd1_id_ex;
     assign w1 = rd2_id_ex;
@@ -307,6 +299,16 @@ module datapath(
         if(regwrite_mem_wb & !invRegAddr)
             register[write_reg_mem_wb] <= wd;
     end
+
+    HazardUnit hazard_unit (
+        .PCWrite(PCWrite),
+        .IF_ID_Write(IF_ID_Write),
+        .ID_EX_MemRead(memread_id_ex),
+        .ID_EX_RegisterRd(write_reg_id_ex),
+        .IF_ID_RegisterRs1(instruction_if_id[19:15]),
+        .IF_ID_RegisterRs2(instruction_if_id[24:20]),
+        .stall(stall)
+    );
     
     
 endmodule

@@ -1,63 +1,43 @@
-`timescale 1ns / 1ps
+`timescale 1ns/1ps
 
 module datapath_tb;
-    // Testbench signals
-    reg clock;
-    reg [63:0] PC;
+    reg clock, reset;
+    integer i;
     
-    // Instantiate the datapath module
+    // Instantiate the datapath
     datapath uut (
-        .clock(clock)
+        .clock(clock),
+        .reset(reset)
     );
-    
+
     // Clock generation
-    always #5 begin
-        clock = ~clock; // Generate a clock with period 10ns
-        $display("PC: %d, rd1: %d, rd2: %d", 
-        uut.PC, uut.rd1, uut.rd2);
-    end
-
+    always #5 clock = ~clock;
     
-    // Test sequence
     initial begin
-        $dumpfile("file.vcd");
-        $dumpvars(0, datapath_tb);
-        
+        // Initialize signals
         clock = 0;
-        uut.PC = 64'd0;
-        
-        // #5;
-        // $display("PC: %d, rd1: %d, rd2: %d, alu_out: %d, RegWrite: %b, MemRead: %b, MemtoReg: %b, MemWrite: %b, Branch: %b, read_data: %d, write_data: %d", 
-        // uut.PC, uut.rd1, uut.rd2, uut.alu_output, uut.RegWrite, uut.MemRead, uut.MemtoReg, uut.MemWrite, uut.Branch, uut.read_data, uut.wd);
-
-        // #10;
-        
-        // $display("PC: %d, rd1: %d, rd2: %d, alu_out: %d, RegWrite: %b, MemRead: %b, MemtoReg: %b, MemWrite: %b, Branch: %b, read_data: %d, write_data: %d", 
-        //  uut.PC, uut.rd1, uut.rd2, uut.alu_output, uut.RegWrite, uut.MemRead, uut.MemtoReg, uut.MemWrite, uut.Branch, uut.read_data, uut.wd);
-
-        // #10;
-        // $display("PC: %d, rd1: %d, rd2: %d, alu_out: %d, RegWrite: %b, MemRead: %b, MemtoReg: %b, MemWrite: %b, Branch: %b, read_data: %d, write_data: %d", 
-        //         uut.PC, uut.rd1, uut.rd2, uut.alu_output, uut.RegWrite, uut.MemRead, uut.MemtoReg, uut.MemWrite, uut.Branch, uut.read_data, uut.wd);
-
-        // #10;
-        // $display("PC: %d, rd1: %d, rd2: %d, alu_out: %d, RegWrite: %b, MemRead: %b, MemtoReg: %b, MemWrite: %b, Branch: %b, read_data: %d, write_data: %d", 
-        //         uut.PC, uut.rd1, uut.rd2, uut.alu_output, uut.RegWrite, uut.MemRead, uut.MemtoReg, uut.MemWrite, uut.Branch, uut.read_data, uut.wd);
+        uut.PC = 64'h0;
 
         
-        // #10;
-        // $display("PC: %d, rd1: %d, rd2: %d, alu_out: %d, RegWrite: %b, MemRead: %b, MemtoReg: %b, MemWrite: %b, Branch: %b, read_data: %d, write_data: %d", 
-        //  uut.PC, uut.rd1, uut.rd2, uut.alu_output, uut.RegWrite, uut.MemRead, uut.MemtoReg, uut.MemWrite, uut.Branch, uut.read_data, uut.wd);
-
-        // #10;
-        // $display("PC: %d, rd1: %d, rd2: %d, alu_out: %d, RegWrite: %b, MemRead: %b, MemtoReg: %b, MemWrite: %b, Branch: %b, read_data: %d, write_data: %d",
-        //         uut.PC, uut.rd1, uut.rd2, uut.alu_output, uut.RegWrite, uut.MemRead, uut.MemtoReg, uut.MemWrite, uut.Branch, uut.read_data, uut.wd);
-
-        // #10;
-        // $display("PC: %d, rd1: %d, rd2: %d, alu_out: %d, RegWrite: %b, MemRead: %b, MemtoReg: %b, MemWrite: %b, Branch: %b, read_data: %d, write_data: %d", 
-        //         uut.PC, uut.rd1, uut.rd2, uut.alu_output, uut.RegWrite, uut.MemRead, uut.MemtoReg, uut.MemWrite, uut.Branch, uut.read_data, uut.wd);
-
+        // Display header
+        $display("-------------------------------------------------------------------------------------------------");
+        $display("| Cycle |   Pipeline Stage  |      PC      |   Instruction / Data  |");
+        $display("-------------------------------------------------------------------------------------------------");
         
-        #50;
+        #15;
+        $display("|  1    |   IF/ID (Fetch)   |  %h  |  %h  |", uut.PC, uut.instruction_if_id);
+        #10;
+        $display("|  2    |   ID/EX (Decode)  |  %h  | ALU In1: %2d, ALU In2: %2d, ALU Out: %2d |", uut.pc_id_ex, uut.alu_in1, uut.alu_in2, uut.alu_output);
+        #10;
+        $display("|  3    |   EX/MEM (Execute)|  %h  | Rd1: %2d, Rd2: %2d|", uut.pc_ex_mem, uut.alu_result_ex_mem, uut.read_data2_ex_mem);
+        #10;
+        $display("|  4    |   MEM/WB (Memory) |  %h  | Write Address: %2d, MEM Read Data: %2d |", uut.pc_ex_mem, uut.write_reg_ex_mem, uut.read_data2_ex_mem);
+        #10;
+        $display("|  5    |   WB (Write-Back) |  %h  | WB Register: x%0d, WB Data: %2d |", uut.PC, uut.write_reg_mem_wb, uut.wd);
+        #10;
+        
+        $display("-------------------------------------------------------------------------------------------------");
+        
         $finish;
     end
     
