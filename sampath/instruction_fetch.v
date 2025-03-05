@@ -12,7 +12,7 @@ module instruction_fetch (
         instr_mem[3] = 32'h00E56FB3;  // OR  x10, x10, x13 (Correct)
         instr_mem[4] = 32'h00A73023;  // LD  x16, 0(x14)   (Incorrect, should be LD not LW)
         instr_mem[5] = 32'h00073583;  // ld  x17, 0(x15)  (Incorrect encoding for SD)
-       instr_mem[6] = 32'h00B282B3;  // SUB x10, x10, x11 (Correct)  
+        instr_mem[6] = 32'h00B282B3;  // SUB x10, x10, x11 (Correct)  
     end
 
     always @(*) begin
@@ -40,10 +40,6 @@ always @(posedge clk or posedge rst) begin
     if (rst) begin
         pc_out         <= 64'b0;
         instruction_out <= 32'b0;
-    end
-    else if(IF_ID_Write) begin
-        pc_out         <= pc_in;
-        instruction_out <= instruction_in;
     end
     else begin
         pc_out         <= pc_in;

@@ -17,7 +17,6 @@ module instruction_decode(
 );
    
     wire [6:0] opcode = instruction[6:0];
-    wire [1:0] ALUOp;
     
     assign rs1 = instruction[19:15];
     assign rs2 = instruction[24:20];
@@ -105,8 +104,8 @@ module ID_EX_Reg (
     input wire memtoreg_in,
     input wire regwrite_in,
     input wire [1:0] alu_op_in,
-    input wire [4:0] register_rs1_in;
-    input wire [4:0] register_rs2_in;
+    input wire [4:0] register_rs1_in,
+    input wire [4:0] register_rs2_in,
 
     output reg [63:0] pc_out,
     output reg [63:0] read_data1_out,
@@ -119,10 +118,10 @@ module ID_EX_Reg (
     output reg memwrite_out,
     output reg memread_out,
     output reg memtoreg_out,
-    output reg regwrite_out
-    output reg [4:0] register_rs1_out;
-    output reg [4:0] register_rs2_out;
-    output reg [1:0] alu_op_out;
+    output reg regwrite_out,
+    output reg [4:0] register_rs1_out,
+    output reg [4:0] register_rs2_out,
+    output reg [1:0] alu_op_out
 
 );
 always @(posedge clk or posedge rst) begin

@@ -37,11 +37,11 @@ end
 endmodule
 
 module MUX3 (
-    input wire [31:0] in0,  // Input 0
-    input wire [31:0] in1,  // Input 1
-    input wire [31:0] in2,  // Input 2
+    input wire [63:0] in0,  // Input 0
+    input wire [63:0] in1,  // Input 1
+    input wire [64:0] in2,  // Input 2
     input wire [1:0] sel,   // 2-bit select signal
-    output reg [31:0] out   // Output
+    output reg [64:0] out   // Output
 );
 
 always @(*) begin

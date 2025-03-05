@@ -87,31 +87,20 @@ module datapath(
 
     // ID/EX Pipeline Register
     wire [63:0] pc_id_ex, rd1_id_ex, rd2_id_ex, imm_val_id_ex;
-    wire [9:0] alu_control_id_ex;
+    wire [3:0] alu_control_id_ex;
     wire [4:0] write_reg_id_ex, register_rs1_id_ex, register_rs2_id_ex;
     wire alusrc_id_ex, branch_id_ex, memwrite_id_ex, memread_id_ex, memtoreg_id_ex, regwrite_id_ex;
 
     wire control_after_hazard;
     assign control_after_hazard = (stall) ? 0 : 1;
 
-    if(control_after_hazard) begin
-        assign alusrc = alusrc;
-        assign ALUOp = ALUOp;
-        assign branch= branch;
-        assign memwrite = memwrite;
-        assign memread = memread;
-        assign memtoreg = memtoreg;
-        assign regwrite = regwrite;
-    end
-    else if(!control_after_hazard) begin
-        assign alusrc = 0;
-        assign ALUOp = 0;
-        assign branch= 0;
-        assign memwrite = 0;
-        assign memread = 0;
-        assign memtoreg = 0;
-        assign regwrite = 0;
-    end
+    assign alusrc   = control_after_hazard ? alusrc : 0;
+    assign ALUOp    = control_after_hazard ? ALUOp : 0;
+    assign branch   = control_after_hazard ? branch : 0;
+    assign memwrite = control_after_hazard ? memwrite : 0;
+    assign memread  = control_after_hazard ? memread : 0;
+    assign memtoreg = control_after_hazard ? memtoreg : 0;
+    assign regwrite = control_after_hazard ? regwrite : 0;
 
     wire [1:0] alu_op_id_ex;
     ID_EX_Reg id_ex_register (
@@ -131,7 +120,7 @@ module datapath(
         .regwrite_in(regwrite),
         .register_rs1_in(instruction_if_id[19:15]),
         .register_rs2_in(instruction_if_id[24:20]),
-        .alu_op_in(ALUOp)
+        .alu_op_in(ALUOp),
         .pc_out(pc_id_ex),
         .read_data1_out(rd1_id_ex),
         .read_data2_out(rd2_id_ex),
@@ -150,13 +139,12 @@ module datapath(
     );
 
     alu_control ALU_CTRL (
-        .instruction(instruction_id_ex),
         .alu_op(alu_op_id_ex),
         .invFunc(invFunc),
         .alu_control_signal(alu_control_signal)
     );
 
-    assign imm_val_id_ex = MemWrite ? {{52{instruction[31]}}, instruction[31:25], instruction[11:7]}  // Store
+    assign imm_val_id_ex = memwrite ? {{52{instruction[31]}}, instruction[31:25], instruction[11:7]}  // Store
                                     : {{52{instruction[31]}}, instruction[31:20]};  // Load
 
     assign immediate = (alu_control_signal == 4'b0010) ? imm_val_id_ex :
@@ -168,12 +156,7 @@ module datapath(
     assign rd1 = rd1_id_ex;
     assign w1 = rd2_id_ex;
     
-    Mux alu_mux (
-        .input1(w1),
-        .input2(immediate),
-        .select(alusrc_id_ex),
-        .out(rd2)
-    );
+    assign rd2 = (alusrc_id_ex) ? immediate : w1;
 
     MUX3 mux3_alu_in1 (
         .in0(rd1),
@@ -183,7 +166,7 @@ module datapath(
         .out(alu_in1)
     );
 
-     MUX3 mux3_alu_in2 (
+    MUX3 mux3_alu_in2 (
         .in0(rd2),
         .in1(wd),
         .in2(alu_result_ex_mem),
@@ -245,9 +228,10 @@ module datapath(
         .MEM_WB_RegWrite(regwrite_mem_wb),
         .ForwardA(ForwardA),
         .ForwardB(ForwardB)
-    )
+    );
     
     wire invMemAddr;
+
     // Memory Access Stage
     memory_access MEM_stage (
         .MemWrite(memwrite_ex_mem),
@@ -267,7 +251,7 @@ module datapath(
         end
     end
 
-     MEM_WB_Reg mem_wb_register (
+    MEM_WB_Reg mem_wb_register (
         .clk(clock),
         .rst(reset),
         .alu_result_in(alu_result_ex_mem),
@@ -290,7 +274,7 @@ module datapath(
     );
 
 
-    always @(posedge clk) begin
+    always @(posedge clock) begin
     if (reset)
         PC <= 0;
     else if (PCWrite)
