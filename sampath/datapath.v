@@ -84,13 +84,13 @@ module datapath(
     wire [4:0] write_reg_id_ex, register_rs1_id_ex, register_rs2_id_ex;
     wire alusrc_id_ex, branch_id_ex, memwrite_id_ex, memread_id_ex, memtoreg_id_ex, regwrite_id_ex;
 
-    assign alusrc_id_ex   = stall ? 0 : alusrc;
-    assign ALUOp_id_ex    = stall ? 0 : ALUOp;
-    assign branch_id_ex   = stall ? 0 : branch;
-    assign memwrite_id_ex = stall ? 0 : memwrite;
-    assign memread_id_ex  = stall ? 0 : memread;
-    assign memtoreg_id_ex = stall ? 0 : memtoreg;
-    assign regwrite_id_ex = stall ? 0 : regwrite;
+    assign alusrc   = stall ? 0 : alusrc;
+    assign ALUOp   = stall ? 0 : ALUOp;
+    assign branch   = stall ? 0 : branch;
+    assign memwrite = stall ? 0 : memwrite;
+    assign memread  = stall ? 0 : memread;
+    assign memtoreg = stall ? 0 : memtoreg;
+    assign regwrite = stall ? 0 : regwrite;
 
 
 
