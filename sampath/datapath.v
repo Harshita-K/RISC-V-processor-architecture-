@@ -116,9 +116,6 @@ module datapath(
     assign memtoreg_id_ex = stall ? 0 : memtoreg;
     assign regwrite_id_ex = stall ? 0 : regwrite;
 
-
-
-
     wire [1:0] alu_op_id_ex;
     ID_EX_Reg id_ex_register (
         .clk(clock),

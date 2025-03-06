@@ -24,8 +24,23 @@ module datapath_tb;
 
         $display("Cycle 0:");
         $display("PC: %h", uut.PC);
-        $display("IF:  Instruction = %h", uut.fetch_unit.instr_mem[0]);
-        $display("------------------------------------------------------");
+        $display("IF:  Instruction = %h", uut.fetch_unit.instr_mem[uut.PC >> 2]);
+        $display("ID:  Instruction = %h, Rs1 = %d, Rs2 = %d, Rd = %d", 
+                     uut.instruction_if_id, uut.rs1, uut.rs2, uut.write_reg);
+            
+            // Execute Stage
+            $display("EX:  ALU Control = %b, Alu_in1 = %h, Alu_in2 = %h, Alu_output = %h", 
+                     uut.alu_control_signal, uut.alu_in1, uut.alu_in2, uut.alu_output);
+            
+            // Memory Access Stage
+            $display("MEM: Address = %h, MemRead = %b, MemWrite = %b, Data = %h",
+                     uut.alu_result_ex_mem, uut.memread_ex_mem, uut.memwrite_ex_mem, uut.data_memory[uut.alu_result_ex_mem >> 3]);
+            
+            // Write Back Stage
+            $display("WB:  RegWrite = %b, WriteReg = %d, WriteData = %h", 
+                     uut.regwrite_mem_wb, uut.write_reg_mem_wb, uut.wd);
+            
+            $display("------------------------------------------------------");
 
         #5 reset = 0; // Release reset after some time
         // Run for a few clock cycles to allow pipelining
