@@ -32,7 +32,7 @@ module datapath(
         register[11] = 64'h000000000000000B; // x11 = 11
         register[12] = 64'h000000000000000C; // x12 = 12
         register[13] = 64'h000000000000000D; // x13 = 13
-        register[14] = 64'h0000000000000008; // x14 = 8
+        register[14] = 64'h0000000000000010; // x14 = 8
         register[15] = 64'h000000000000000F; // x15 = 15
         register[16] = 64'h0000000000000010; // x16 = 16
         register[17] = 64'h0000000000000008; // x17 = 4
@@ -50,7 +50,9 @@ module datapath(
         register[29] = 64'h000000000000001D; // x29 = 29
         register[30] = 64'h000000000000001E; // x30 = 30
         register[31] = 64'h000000000000001F; // x31 = 31
-        data_memory[1] = 64'h000000000000001F;
+        data_memory[2] = 64'h0000000000000001;
+        data_memory[1] = 64'h0000000000000100;
+        
     end
 
     // Fetch Stage
@@ -362,14 +364,24 @@ module datapath(
         .out(wd)
     );
 
+    reg halt = 1; // Use reg instead of parameter
+
     always @(posedge clock) begin
-    if (reset)
-        PC <= 0;
-    else if (PCWrite)
-        PC <= next_PC_final; // or your next-PC logic
-    else
-        PC <= PC; // or your PC-hold logic
+        if (reset)
+            PC <= 0;
+        else if (halt == 3)
+            $finish;
+        else if (instruction == 64'hFFFFFFFF) begin
+            PC <= PC;
+            halt <= halt + 1; // Use <= for sequential updates
+        end
+        else if (PCWrite)
+            PC <= next_PC_final; // Your next-PC logic
+        else
+            PC <= PC; // Hold PC value
     end
+
+
 
     always @(posedge clock) begin
         if(regwrite_mem_wb & !invRegAddr)
