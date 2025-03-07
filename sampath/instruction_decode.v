@@ -17,7 +17,7 @@ module instruction_decode(
 );
    
     wire [6:0] opcode = instruction[6:0];
-    
+
     assign rs1 = instruction[19:15];
     assign rs2 = instruction[24:20];
     assign write_addr = instruction[11:7];
@@ -94,7 +94,7 @@ module ID_EX_Reg (
     input wire [63:0] pc_in,
     input wire [63:0] read_data1_in,
     input wire [63:0] read_data2_in,
-    input wire [31:0] imm_val_in,
+    input wire [63:0] imm_val_in,
     input wire [4:0] write_reg_in,
     input wire [9:0] alu_control_in,
     input wire alusrc_in,
@@ -106,6 +106,7 @@ module ID_EX_Reg (
     input wire [1:0] alu_op_in,
     input wire [4:0] register_rs1_in,
     input wire [4:0] register_rs2_in,
+    input wire [31:0] instruction_in,
 
     output reg [63:0] pc_out,
     output reg [63:0] read_data1_out,
@@ -121,7 +122,8 @@ module ID_EX_Reg (
     output reg regwrite_out,
     output reg [4:0] register_rs1_out,
     output reg [4:0] register_rs2_out,
-    output reg [1:0] alu_op_out
+    output reg [1:0] alu_op_out,
+    output reg [31:0] instruction_out
 
 );
 always @(posedge clk or posedge rst) begin
@@ -141,11 +143,12 @@ always @(posedge clk or posedge rst) begin
         register_rs1_out <= 5'b0;
         register_rs2_out <= 5'b0;
         alu_op_out <= 2'b0;
+        instruction_out <= 32'b0;
     end else begin
         pc_out         <= pc_in;
         read_data1_out <= read_data1_in;
         read_data2_out <= read_data2_in;
-        imm_val_out    <= {{32{imm_val_in[31]}}, imm_val_in};
+        imm_val_out    <= imm_val_in;
         write_reg_out  <= write_reg_in;
         alu_control_out <= alu_control_in;
         alusrc_out     <= alusrc_in;
@@ -157,6 +160,7 @@ always @(posedge clk or posedge rst) begin
         register_rs1_out <= register_rs1_in;
         register_rs2_out <= register_rs2_in;
         alu_op_out <= alu_op_in;
+        instruction_out <= instruction_in;
     end
 end
 

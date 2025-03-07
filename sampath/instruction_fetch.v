@@ -19,6 +19,7 @@ endmodule
 module IF_ID_Reg (
     input wire clk,
     input wire rst,
+    input branch_signal,
     input wire [63:0] pc_in,
     input wire [31:0] instruction_in,
 
@@ -27,7 +28,7 @@ module IF_ID_Reg (
 );
 
 always @(posedge clk or posedge rst) begin
-    if (rst) begin
+    if (rst | branch_signal) begin
         pc_out         <= 64'b0;
         instruction_out <= 32'b0;
     end

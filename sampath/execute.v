@@ -40,21 +40,7 @@ module execute(
     // );
 
     // ALU for shifting immediate left by 1 bit
-    wire [63:0] shifted_immediate;
-    ALU alu_shift (
-        .a(immediate),
-        .b(64'd1),
-        .alu_control_signal(4'b0011), // Logical Shift Left
-        .alu_result(shifted_immediate)
-    );
-    // assign branch_signal = Branch & (alu_output == 0);
-    // // ALU for branch target calculation (PC + shifted immediate)
-    ALU alu_branch (
-        .a(PC),
-        .b(shifted_immediate),
-        .alu_control_signal(4'b0010), // Addition
-        .alu_result(next_PC)
-    );
+    
 
     // MUX to choose between branch_target and updated_PC
     // Mux next_pc_mux (
@@ -72,7 +58,6 @@ module EX_MEM_Reg (
     input wire [63:0] pc_in,
     input wire zero_in,
     input wire [63:0] alu_result_in,
-    input wire [63:0] read_data2_in,
     input wire [4:0] write_reg_in,
     input wire branch_in,
     input wire memwrite_in,
@@ -83,7 +68,6 @@ module EX_MEM_Reg (
     output reg [63:0] pc_out,
     output reg zero_out,
     output reg [63:0] alu_result_out,
-    output reg [63:0] read_data2_out,
     output reg [4:0] write_reg_out,
     output reg branch_out,
     output reg memwrite_out,
@@ -97,7 +81,6 @@ always @(posedge clk or posedge rst) begin
         pc_out         <= 64'b0;
         zero_out       <= 1'b0;
         alu_result_out <= 32'b0;
-        read_data2_out <= 32'b0;
         write_reg_out  <= 5'b0;
         branch_out     <= 1'b0;
         memwrite_out   <= 1'b0;
@@ -108,7 +91,6 @@ always @(posedge clk or posedge rst) begin
         pc_out         <= pc_in;
         zero_out       <= zero_in;
         alu_result_out <= alu_result_in;
-        read_data2_out <= read_data2_in;
         write_reg_out  <= write_reg_in;
         branch_out     <= branch_in;
         memwrite_out   <= memwrite_in;
