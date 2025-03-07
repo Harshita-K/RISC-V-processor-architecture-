@@ -61,11 +61,18 @@ module datapath(
         .instruction(instruction),
         .invAddr(invAddr)
     );
+    wire [63:0] updated_PC, next_PC_final;
+    ALU alu_pc_update (
+        .a(PC),
+        .b(64'd4),
+        .alu_control_signal(4'b0010), // Addition
+        .alu_result(updated_PC)
+    );
 
     // ID/EX Pipeline Register
     wire [63:0] pc_if_id;
     wire [31:0] instruction_if_id;
-
+    // id_if write is different
     IF_ID_Reg if_id_register (
         .clk(clock),
         .rst(reset),
@@ -101,6 +108,49 @@ module datapath(
         .invRegAddr(invRegAddr)
     );
 
+    
+    wire [63:0] imm_val;
+    wire [63:0] immediate;
+
+    // Immediate extraction for Load and Store
+    assign imm_val = memwrite ? 
+        {{52{instruction_if_id[31]}}, instruction_if_id[31:25], instruction_if_id[11:7]} // S-type (Store)
+        : {{52{instruction_if_id[31]}}, instruction_if_id[31:20]}; // I-type (Load)
+
+    // Immediate selection based on ALUOp
+    assign immediate = (ALUOp == 2'b00) ? imm_val : 
+                    (ALUOp == 2'b01) ? {{51{instruction_if_id[31]}}, instruction_if_id[31], instruction_if_id[7], 
+                                        instruction_if_id[30:25], instruction_if_id[11:8] } // B-type (Branch)
+                    : 64'd0;
+
+
+    wire [63:0] shifted_immediate, next_PC;
+    ALU alu_shift (
+        .a(immediate),
+        .b(64'd1),
+        .alu_control_signal(4'b0011), // Logical Shift Left
+        .alu_result(shifted_immediate)
+    );
+
+    ALU alu_branch (
+        .a(pc_if_id),
+        .b(shifted_immediate),
+        .alu_control_signal(4'b0010), // Addition
+        .alu_result(next_PC)
+    );
+
+    assign branch_signal = branch & (register[rs1] == register[rs2]);
+    
+    Mux next_pc_mux (
+        .input1(updated_PC),
+        .input2(next_PC),
+        .select(branch_signal),
+        .out(next_PC_final)
+    );
+
+
+
+
     //Hazard Unit
     wire PCWrite, IF_ID_Write, stall, alusrc_after_stall, ALUOp_after_stall, branch_after_stall, memwrite_after_stall, memread_after_stall, memtoreg_after_stall, regwrite_after_stall;
     // ID/EX Pipeline Register
@@ -109,7 +159,6 @@ module datapath(
     wire [4:0] write_reg_id_ex, register_rs1_id_ex, register_rs2_id_ex;
     wire alusrc_id_ex, branch_id_ex, memwrite_id_ex, memread_id_ex, memtoreg_id_ex, regwrite_id_ex;
     wire [1:0] alu_op_id_ex;
-    wire [63:0] imm_val;
     wire [31:0] instruction_id_ex;
 
     HazardUnit hazard_unit (
@@ -134,36 +183,7 @@ module datapath(
     
 
     // Immediate Generation
-    assign imm_val = memwrite ? {{52{instruction_if_id[31]}}, instruction_if_id[31:25], instruction_if_id[11:7]}  // Store
-                                    : {{52{instruction_if_id[31]}}, instruction_if_id[31:20]};  // Load
-    wire [63:0] immediate;
-    assign immediate = (ALUOp == 2'b00) ? imm_val :
-                    (ALUOp == 2'b01) ? {{52{instruction_if_id[31]}}, instruction_if_id[31], instruction_if_id[7], instruction_if_id[30:25], instruction_if_id[11:8]}  // Branch
-                                                    : 64'd0;
 
-    wire [63:0] shifted_immediate, next_PC;
-    ALU alu_shift (
-        .a(immediate),
-        .b(64'd1),
-        .alu_control_signal(4'b0011), // Logical Shift Left
-        .alu_result(shifted_immediate)
-    );
-
-    ALU alu_branch (
-        .a(PC),
-        .b(shifted_immediate),
-        .alu_control_signal(4'b0010), // Addition
-        .alu_result(next_PC)
-    );
-
-    assign branch_signal = branch & (register[rs1] == register[rs2]);
-    
-    Mux next_pc_mux1 (
-        .input1(updated_PC),
-        .input2(next_PC),
-        .select(branch_signal),
-        .out(next_PC_final)
-    );
     
     ID_EX_Reg id_ex_register (
         .clk(clock),
@@ -282,21 +302,7 @@ module datapath(
     );
     
     // Branch Logic
-    assign branch_signal = branch_ex_mem & zer0_ex_mem;
-    wire [63:0] updated_PC, next_PC_final;
-    ALU alu_pc_update (
-        .a(PC),
-        .b(64'd4),
-        .alu_control_signal(4'b0010), // Addition
-        .alu_result(updated_PC)
-    );
 
-    Mux next_pc_mux2 (
-        .input1(updated_PC),
-        .input2(pc_ex_mem),
-        .select(branch_signal),
-        .out(next_PC_final)
-    );
 
     wire [1:0] ForwardA, ForwardB;
     Forwarding_Unit fwdunit(
