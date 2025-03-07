@@ -158,7 +158,7 @@ module datapath(
 
     assign branch_signal = branch & (register[rs1] == register[rs2]);
     
-    Mux next_pc_mux (
+    Mux next_pc_mux1 (
         .input1(updated_PC),
         .input2(next_PC),
         .select(branch_signal),
@@ -237,7 +237,7 @@ module datapath(
     );
 
     // Execute Stage
-    wire [63:0] alu_output, next_PC;
+    wire [63:0] alu_output;
     wire zer0_flag;
     execute execute_unit (
         .alu_control_signal(alu_control_signal),
@@ -290,7 +290,8 @@ module datapath(
         .alu_control_signal(4'b0010), // Addition
         .alu_result(updated_PC)
     );
-    Mux next_pc_mux (
+
+    Mux next_pc_mux2 (
         .input1(updated_PC),
         .input2(pc_ex_mem),
         .select(branch_signal),
