@@ -105,6 +105,8 @@ module datapath_tb;
             $display("  invalid = %b", uut.invOp);
             $display("  stall = %b", uut.stall);
             $display("  only from control unit: MemWrite = %b, MemRead = %b, MemtoReg = %b, RegWrite = %b", uut.memwrite, uut.memread, uut.memtoreg, uut.regwrite);
+            $display("hazard unit:");
+            $display("  PCWrite = %b, IF_ID_Write = %b, stall = %b, memread_id_ex = %b, write_reg_id_ex = %b, instruction_id_ex[19:15] = %b, instruction_id_ex[24:20] = %b", uut.PCWrite, uut.IF_ID_Write, uut.stall, uut.memread_id_ex, uut.write_reg_id_ex, uut.instruction_id_ex[19:15], uut.instruction_id_ex[24:20]);
             $display("ID/EX Register:");
             $display("  PC (pc_id_ex) = %h", uut.pc_id_ex);
             $display("  Read Data1 (rd1_id_ex) = %h", uut.rd1_id_ex);

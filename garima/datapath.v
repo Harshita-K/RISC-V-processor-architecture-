@@ -115,8 +115,8 @@ module datapath(
         .IF_ID_Write(IF_ID_Write),
         .ID_EX_MemRead(memread_id_ex),
         .ID_EX_RegisterRd(write_reg_id_ex),
-        .IF_ID_RegisterRs1(instruction_id_ex[19:15]),
-        .IF_ID_RegisterRs2(instruction_id_ex[24:20]),
+        .IF_ID_RegisterRs1(instruction_if_id[19:15]),
+        .IF_ID_RegisterRs2(instruction_if_id[24:20]),
         .stall(stall)
     );
 
