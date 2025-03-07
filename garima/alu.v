@@ -203,6 +203,8 @@ module ALU (a,b,alu_control_signal, alu_result);
              alu_result = or_result;
         else if (alu_control_signal == 4'b0000) 
              alu_result = and_result;
+        else if (alu_control_signal == 4'b0011)
+             alu_result = shift_result;
         else 
              alu_result = 0; 
     end

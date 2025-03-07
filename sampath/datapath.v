@@ -293,11 +293,6 @@ module datapath(
         .memtoreg_out(memtoreg_ex_mem),
         .regwrite_out(regwrite_ex_mem)
     );
-    
-    // Branch Logic
-
-
-    
 
     wire [1:0] ForwardA, ForwardB;
     Forwarding_Unit fwdunit(

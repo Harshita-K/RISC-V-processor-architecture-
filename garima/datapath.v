@@ -71,6 +71,7 @@ module datapath(
         .rst(reset),
         .pc_in(PC),
         .instruction_in(instruction),
+        .branch_signal(branch_signal),
         .IF_ID_Write(IF_ID_Write),
         .pc_out(pc_if_id),
         .instruction_out(instruction_if_id)
@@ -130,6 +131,7 @@ module datapath(
     assign memtoreg_after_stall = stall ? 0 : memtoreg;
     assign regwrite_after_stall = stall ? 0 : regwrite;
 
+    
 
     // Immediate Generation
     assign imm_val = memwrite ? {{52{instruction_if_id[31]}}, instruction_if_id[31:25], instruction_if_id[11:7]}  // Store
@@ -138,6 +140,30 @@ module datapath(
     assign immediate = (ALUOp == 2'b00) ? imm_val :
                     (ALUOp == 2'b01) ? {{52{instruction_if_id[31]}}, instruction_if_id[31], instruction_if_id[7], instruction_if_id[30:25], instruction_if_id[11:8]}  // Branch
                                                     : 64'd0;
+
+    wire [63:0] shifted_immediate, next_PC;
+    ALU alu_shift (
+        .a(immediate),
+        .b(64'd1),
+        .alu_control_signal(4'b0011), // Logical Shift Left
+        .alu_result(shifted_immediate)
+    );
+
+    ALU alu_branch (
+        .a(PC),
+        .b(shifted_immediate),
+        .alu_control_signal(4'b0010), // Addition
+        .alu_result(next_PC)
+    );
+
+    assign branch_signal = branch & (register[rs1] == register[rs2]);
+    
+    Mux next_pc_mux (
+        .input1(updated_PC),
+        .input2(next_PC),
+        .select(branch_signal),
+        .out(next_PC_final)
+    );
     
     ID_EX_Reg id_ex_register (
         .clk(clock),
