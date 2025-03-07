@@ -82,7 +82,7 @@ module datapath_tb;
         #5 reset = 0; // Release reset
 
         // Run for a few clock cycles to allow pipelining
-        repeat (9) begin
+        repeat (5) begin
             #10; // Advance one full clock period (10ns)
             $display("Cycle %d:", $time/10);
             

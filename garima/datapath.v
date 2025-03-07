@@ -71,6 +71,7 @@ module datapath(
         .rst(reset),
         .pc_in(PC),
         .instruction_in(instruction),
+        .IF_ID_Write(IF_ID_Write),
         .pc_out(pc_if_id),
         .instruction_out(instruction_if_id)
     );
