@@ -20,6 +20,5 @@ module HazardUnit(
             PCWrite = 1'b0;
             IF_ID_Write = 1'b0;
         end
-    end
-    
+    end   
 endmodule

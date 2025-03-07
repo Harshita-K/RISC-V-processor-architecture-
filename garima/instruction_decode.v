@@ -122,7 +122,7 @@ module ID_EX_Reg (
     output reg regwrite_out,
     output reg [4:0] register_rs1_out,
     output reg [4:0] register_rs2_out,
-    output reg [1:0] alu_op_out
+    output reg [1:0] alu_op_out,
     output reg [31:0] instruction_out
 
 );

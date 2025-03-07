@@ -100,17 +100,35 @@ module datapath(
     );
 
     //Hazard Unit
-
+    wire PCWrite, IF_ID_Write, stall, alusrc_after_stall, ALUOp_after_stall, branch_after_stall, memwrite_after_stall, memread_after_stall, memtoreg_after_stall, regwrite_after_stall;
     // ID/EX Pipeline Register
     wire [63:0] pc_id_ex, rd1_id_ex, rd2_id_ex, imm_val_id_ex;
     wire [9:0] alu_control_id_ex;
     wire [4:0] write_reg_id_ex, register_rs1_id_ex, register_rs2_id_ex;
     wire alusrc_id_ex, branch_id_ex, memwrite_id_ex, memread_id_ex, memtoreg_id_ex, regwrite_id_ex;
-
-
     wire [1:0] alu_op_id_ex;
     wire [63:0] imm_val;
-    wire instruction_id_ex;
+    wire [31:0] instruction_id_ex;
+
+    HazardUnit hazard_unit (
+        .PCWrite(PCWrite),
+        .IF_ID_Write(IF_ID_Write),
+        .ID_EX_MemRead(memread_id_ex),
+        .ID_EX_RegisterRd(write_reg_id_ex),
+        .IF_ID_RegisterRs1(instruction_id_ex[19:15]),
+        .IF_ID_RegisterRs2(instruction_id_ex[24:20]),
+        .stall(stall)
+    );
+
+    //stall logic
+    assign alusrc_after_stall   = stall ? 0 : alusrc;
+    assign ALUOp_after_stall    = stall ? 0 : ALUOp;
+    assign branch_after_stall   = stall ? 0 : branch;
+    assign memwrite_after_stall = stall ? 0 : memwrite;
+    assign memread_after_stall  = stall ? 0 : memread;
+    assign memtoreg_after_stall = stall ? 0 : memtoreg;
+    assign regwrite_after_stall = stall ? 0 : regwrite;
+
 
     // Immediate Generation
     assign imm_val = memwrite ? {{52{instruction_if_id[31]}}, instruction_if_id[31:25], instruction_if_id[11:7]}  // Store
@@ -129,12 +147,12 @@ module datapath(
         .imm_val_in(immediate),
         .write_reg_in(write_reg),
         .alu_control_in(alu_control),
-        .alusrc_in(alusrc),
-        .branch_in(branch),
-        .memwrite_in(memwrite),
-        .memread_in(memread),
-        .memtoreg_in(memtoreg),
-        .regwrite_in(regwrite),
+        .alusrc_in(alusrc_after_stall),
+        .branch_in(branch_after_stall),
+        .memwrite_in(memwrite_after_stall),
+        .memread_in(memread_after_stall),
+        .memtoreg_in(memtoreg_after_stall),
+        .regwrite_in(regwrite_after_stall),
         .register_rs1_in(instruction_if_id[19:15]),
         .register_rs2_in(instruction_if_id[24:20]),
         .alu_op_in(ALUOp),
@@ -153,7 +171,7 @@ module datapath(
         .regwrite_out(regwrite_id_ex),
         .register_rs1_out(register_rs1_id_ex),
         .register_rs2_out(register_rs2_id_ex),
-        .alu_op_out(alu_op_id_ex)
+        .alu_op_out(alu_op_id_ex),
         .instruction_out(instruction_id_ex)
     );
 
@@ -166,25 +184,6 @@ module datapath(
         .alu_control_signal(alu_control_signal)
     );
 
-    wire PCWrite, IF_ID_Write, stall;
-    HazardUnit hazard_unit (
-        .PCWrite(PCWrite),
-        .IF_ID_Write(IF_ID_Write),
-        .ID_EX_MemRead(memread_id_ex),
-        .ID_EX_RegisterRd(write_reg_id_ex),
-        .IF_ID_RegisterRs1(instruction_id_ex[19:15]),
-        .IF_ID_RegisterRs2(instruction_id_ex[24:20]),
-        .stall(stall)
-    );
-
-    //stall logic
-    assign alusrc   = stall ? 0 : alusrc;
-    assign ALUOp    = stall ? 0 : ALUOp;
-    assign branch   = stall ? 0 : branch;
-    assign memwrite = stall ? 0 : memwrite;
-    assign memread  = stall ? 0 : memread;
-    assign memtoreg = stall ? 0 : memtoreg;
-    assign regwrite = stall ? 0 : regwrite;
 
     wire [63:0] rd1, rd2, wd, w1, alu_in1, alu_in2;
     assign invRegAddr = (rs1 > 5'd31) | (rs2 > 5'd31);
