@@ -5,7 +5,7 @@ module alu_control (
     output reg invFunc
 );
     always @(*) begin
-        invFunc = 0; // Default to no invalid function
+        invFunc = 0; 
         
         if (alu_op == 2'b00) 
             alu_control_signal = 4'b0010; // ADD operation

@@ -7,11 +7,10 @@ module ControlUnit (
     output reg MemWrite,
     output reg Branch,
     output reg [1:0] ALUOp,
-    output reg invOp  // Flag for invalid opcode
+    output reg invOp  
 );
     
     always @(*) begin
-        // Default values
         RegWrite = 0;
         ALUSrc   = 0;
         MemRead  = 0;
@@ -19,7 +18,7 @@ module ControlUnit (
         MemWrite = 0;
         Branch   = 0;
         ALUOp    = 2'b00;
-        invOp    = 0;  // Assume opcode is valid
+        invOp    = 0;  
 
         case (opcode)
             7'b0110011: begin  // R-type
