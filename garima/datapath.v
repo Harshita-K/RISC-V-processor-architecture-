@@ -32,10 +32,10 @@ module datapath(
         register[11] = 64'h000000000000000B; // x11 = 11
         register[12] = 64'h000000000000000C; // x12 = 12
         register[13] = 64'h000000000000000D; // x13 = 13
-        register[14] = 64'h0000000000000010; // x14 = 8
+        register[14] = 64'h0000000000000010; // x14 = 16
         register[15] = 64'h000000000000000F; // x15 = 15
         register[16] = 64'h0000000000000010; // x16 = 16
-        register[17] = 64'h0000000000000008; // x17 = 4
+        register[17] = 64'h0000000000000008; // x17 = 8
         register[18] = 64'h0000000000000012; // x18 = 18
         register[19] = 64'h0000000000000013; // x19 = 19
         register[20] = 64'h0000000000000014; // x20 = 20
@@ -50,6 +50,7 @@ module datapath(
         register[29] = 64'h000000000000001D; // x29 = 29
         register[30] = 64'h000000000000001E; // x30 = 30
         register[31] = 64'h000000000000001F; // x31 = 31
+        data_memory[3] = 64'h0000000000000006;
         data_memory[2] = 64'h0000000000000001;
         data_memory[1] = 64'h0000000000000100;
         
@@ -91,11 +92,13 @@ module datapath(
     wire [9:0] alu_control;
     wire alusrc, regwrite, memread, memtoreg, memwrite, branch, invOp, invFunc, invRegAddr;
     wire [1:0] ALUOp;
+    wire [31:0] imm_val;
 
     instruction_decode decode_unit (
         .instruction(instruction_if_id),
         .rs1(rs1),
         .rs2(rs2),
+        .imm_val(imm_val),
         .write_addr(write_reg),
         .alu_control(alu_control),
         .ALUSrc(alusrc),
@@ -110,21 +113,13 @@ module datapath(
         .invRegAddr(invRegAddr)
     );
 
-    
-    wire [63:0] imm_val;
     wire [63:0] immediate;
-
-    // Immediate extraction for Load and Store
-    assign imm_val = memwrite ? 
-        {{52{instruction_if_id[31]}}, instruction_if_id[31:25], instruction_if_id[11:7]} // S-type (Store)
-        : {{52{instruction_if_id[31]}}, instruction_if_id[31:20]}; // I-type (Load)
 
     // Immediate selection based on ALUOp
     assign immediate = (ALUOp == 2'b00) ? imm_val : 
-                    (ALUOp == 2'b01) ? {{51{instruction_if_id[31]}}, instruction_if_id[31], instruction_if_id[7], 
-                                        instruction_if_id[30:25], instruction_if_id[11:8] } // B-type (Branch)
+                    (ALUOp == 2'b01) ? {{51{instruction[31]}}, instruction[31], instruction[7], 
+                                        instruction[30:25], instruction[11:8] } // B-type (Branch)
                     : 64'd0;
-
 
     wire [63:0] shifted_immediate, next_PC;
     ALU alu_shift (
@@ -202,8 +197,8 @@ module datapath(
         .memread_in(memread_after_stall),
         .memtoreg_in(memtoreg_after_stall),
         .regwrite_in(regwrite_after_stall),
-        .register_rs1_in(instruction_if_id[19:15]),
-        .register_rs2_in(instruction_if_id[24:20]),
+        .register_rs1_in(rs1),
+        .register_rs2_in(rs2),
         .alu_op_in(ALUOp),
         .instruction_in(instruction_if_id),
         .pc_out(pc_id_ex),

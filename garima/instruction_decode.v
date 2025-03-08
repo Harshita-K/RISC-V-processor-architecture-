@@ -5,6 +5,7 @@ module instruction_decode(
     output [4:0] write_addr,
     output [9:0] alu_control, // Updated to 10-bit concatenation
     output [1:0] ALUOp,
+    output reg[31:0] imm_val,
     output ALUSrc,
     output RegWrite,
     output MemRead,
@@ -19,7 +20,7 @@ module instruction_decode(
     wire [6:0] opcode = instruction[6:0];
     
     assign rs1 = instruction[19:15];
-    assign rs2 = instruction[24:20];
+    assign rs2 = (opcode == 7'b0110011 || opcode == 7'b1100011 || opcode == 7'b0100011) ? instruction[24:20] : 5'bx; // Return 'x' when rs2 is not used
     assign write_addr = instruction[11:7];
     assign alu_control = {instruction[31:25], instruction[14:12]};
 
@@ -35,6 +36,24 @@ module instruction_decode(
         .ALUOp(ALUOp),
         .invOp(invOp)
     );
+
+    // Immediate extraction logic
+    always @(*) begin
+        case (opcode)
+            7'b0000011, 7'b0010011:  // I-type (Load/Immediate arithmetic)
+                imm_val = {{20{instruction[31]}}, instruction[31:20]};
+            7'b0100011:  // S-type (Store)
+                imm_val = {{20{instruction[31]}}, instruction[31:25], instruction[11:7]};
+            7'b1100011:  // B-type (Branch)
+                imm_val = {{19{instruction[31]}}, instruction[31], instruction[7], instruction[30:25], instruction[11:8], 1'b0};
+            7'b1101111:  // J-type (JAL)
+                imm_val = {{11{instruction[31]}}, instruction[31], instruction[19:12], instruction[20], instruction[30:21], 1'b0};
+            7'b0110111, 7'b0010111:  // U-type (LUI/AUIPC)
+                imm_val = {instruction[31:12], 12'b0};
+            default: 
+                imm_val = 32'bx; // Invalid case
+        endcase
+    end
 
 endmodule
 

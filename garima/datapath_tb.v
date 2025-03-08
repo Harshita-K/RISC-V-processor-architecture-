@@ -17,13 +17,15 @@ module datapath_tb;
             $readmemb("instructions.txt", uut.fetch_unit.instr_mem);
     end
     initial begin
+        $dumpfile("file.vcd"); // Name of the VCD file
+        $dumpvars(0, datapath_tb); // Dumps all signals from the testbench module
+    end
+
+    initial begin
         // Initialize clock and reset
         clock = 0;
         reset = 1;
         
-        
-        
-
         $display("Cycle 0:");
         $display("PC: %d", uut.PC);
         $display("IF:  Instruction = %h", uut.fetch_unit.instr_mem[uut.PC >> 2]);
@@ -41,8 +43,8 @@ module datapath_tb;
             $display("IF:  Instruction = %b", uut.fetch_unit.instr_mem[uut.PC >> 2]);
             
             // Decode Stage
-            $display("ID:  Instruction = %h, Rs1 = %d, Rs2 = %d, Rd = %d", 
-                     uut.instruction_if_id, uut.rs1, uut.rs2, uut.write_reg);
+            $display("ID:  Instruction = %h, Rs1 = %d, Rs2 = %d, Rd = %d, imm = %d", 
+                     uut.instruction_if_id, uut.rs1, uut.rs2, uut.write_reg, uut.imm_val);
             
             // Execute Stage
             $display("EX:  ALU Control = %h, Alu_in1 = %h, Alu_in2 = %h, Alu_output = %h", 
