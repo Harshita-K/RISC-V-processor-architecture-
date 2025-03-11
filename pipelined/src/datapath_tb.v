@@ -34,7 +34,7 @@ module datapath_tb;
 
         #5 reset = 0; // Release reset after some time
         // Run for a few clock cycles to allow pipelining
-        repeat (25) begin
+        forever begin
             #10;
             $display("Cycle %d:", $time/10);
             $display("PC: %d", uut.PC);
